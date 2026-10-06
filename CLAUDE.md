@@ -116,6 +116,8 @@ asleep/locked (or from a sandboxed shell) — use the Shots tool, which renders 
 - Day one: `./release.sh <version> --upload --seed <SRD_data.mdb> <SRD_2018_u.mdb>` → public release on GitHub +
   `publish/handoff/Sveta's Recipes Setup <version>.exe`, the same version with her data as `seed/recipes.db`.
   Hand that file over privately. Later versions: `./release.sh <next> --upload` only.
+- Framework-dependent: the app ships without .NET; Setup installs the .NET 10 runtime (from Microsoft) when missing
+  (`--framework net10-x64-runtime`), so updates carry only app files.
 - Installer is unsigned (cross-packed from macOS): SmartScreen shows "Windows protected your PC" → More info → Run
   anyway, once.
 

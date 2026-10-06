@@ -28,14 +28,18 @@ done
 repo=https://github.com/macsux/sveta-recipes
 vpk=${VPK:-$HOME/.dotnet/tools/vpk}
 pack=(--packId SvetaRecipes --packVersion "$version" --packTitle "Sveta's Recipes" --packAuthors macsux
-      --mainExe SvetaRecipes.exe --channel win --runtime win-x64 --delta None)
+      --mainExe SvetaRecipes.exe --channel win --runtime win-x64 --delta None
+      --framework net10-x64-runtime)
+# --framework: the app ships WITHOUT the .NET runtime. Setup installs the .NET 10 runtime from Microsoft if the PC
+# doesn't have it, before installing the app; every later update is just the app and reuses that runtime.
+# (Avalonia needs only the base runtime, not the Windows Desktop one.)
 # --delta None: her installed copy started from the seeded package, so a delta against the public package would not
 # apply; full packages always do.
 
 dotnet test --project tests/SvetaRecipes.Core.Tests
 
 rm -rf publish/win-x64
-dotnet publish src/SvetaRecipes.App -c Release -r win-x64 --self-contained -p:PublishReadyToRun=true \
+dotnet publish src/SvetaRecipes.App -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true \
   -p:Version="$version" -o publish/win-x64
 
 "$vpk" "[win]" pack "${pack[@]}" --packDir publish/win-x64 --outputDir Releases
