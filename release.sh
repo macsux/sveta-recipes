@@ -28,7 +28,7 @@ done
 repo=https://github.com/macsux/sveta-recipes
 vpk=${VPK:-$HOME/.dotnet/tools/vpk}
 pack=(--packId SvetaRecipes --packVersion "$version" --packTitle "Sveta's Recipes" --packAuthors macsux
-      --mainExe SvetaRecipes.exe --channel win --delta None)
+      --mainExe SvetaRecipes.exe --channel win --runtime win-x64 --delta None)
 # --delta None: her installed copy started from the seeded package, so a delta against the public package would not
 # apply; full packages always do.
 
