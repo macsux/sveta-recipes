@@ -1,0 +1,222 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:m="using:SvetaRecipes.Core.Model"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.ToolsView"
+             x:DataType="vm:ToolsViewModel">
+    <TabControl Classes="large" Margin="0">
+        <!-- ===================================================== Settings & backups -->
+        <TabItem Header="Settings &amp; backups">
+            <ScrollViewer>
+                <StackPanel Margin="28,20" Spacing="10" MaxWidth="860" HorizontalAlignment="Left">
+                    <TextBlock Text="COSTING" Classes="caption" />
+                    <Grid ColumnDefinitions="200,Auto,*" RowDefinitions="Auto" ColumnSpacing="12">
+                        <TextBlock Text="Labour rate ($ per hour)" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Width="100" HorizontalContentAlignment="Right"
+                                 Text="{Binding LabourRate, Converter={x:Static svc:NumberConverter.Instance}}" />
+                        <TextBlock Grid.Column="2" Text="Every recipe's labour hours are costed at this rate." Classes="small muted" VerticalAlignment="Center" />
+                    </Grid>
+
+                    <TextBlock Text="YOUR BUSINESS (PRINTED ON INVOICES)" Classes="caption" Margin="0,14,0,0" />
+                    <Grid ColumnDefinitions="200,*,16,90,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                        <TextBlock Text="Name" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding BusinessName}" />
+                        <TextBlock Grid.Row="1" Text="Address" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding BusinessAddress1}" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding BusinessAddress2}" PlaceholderText="Address line 2" />
+                        <TextBlock Grid.Row="3" Text="City · province" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding BusinessCity}" />
+                        <TextBox Grid.Row="3" Grid.Column="3" Text="{Binding BusinessProvince}" />
+                        <TextBox Grid.Row="3" Grid.Column="4" Text="{Binding BusinessPostal}" PlaceholderText="Postal code" />
+                        <TextBlock Grid.Row="4" Text="Phone · email" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding BusinessPhone}" />
+                        <TextBox Grid.Row="4" Grid.Column="3" Grid.ColumnSpan="2" Text="{Binding BusinessEmail}" />
+                    </Grid>
+
+                    <TextBlock Text="PRINTING" Classes="caption" Margin="0,14,0,0" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Recipe print text size" Classes="secondary" VerticalAlignment="Center" Width="200" />
+                        <NumericUpDown Value="{Binding PrintFontSize}" Minimum="7" Maximum="20" Increment="0.5" FormatString="0.#" Width="120" />
+                        <TextBlock Text="points (10.5 is normal)" Classes="small muted" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="LABELS" Classes="caption" Margin="0,14,0,0" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Labels per sheet" Classes="secondary" VerticalAlignment="Center" Width="200" />
+                        <NumericUpDown Value="{Binding LabelColumns}" Minimum="1" Maximum="6" Increment="1" FormatString="0" Width="110" />
+                        <TextBlock Text="across  ×" VerticalAlignment="Center" />
+                        <NumericUpDown Value="{Binding LabelRows}" Minimum="1" Maximum="20" Increment="1" FormatString="0" Width="110" />
+                        <TextBlock Text="down (Letter paper; 2 × 5 fits Avery 5163)" Classes="small muted" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="APPEARANCE" Classes="caption" Margin="0,14,0,0" />
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <TextBlock Text="Theme" Classes="secondary" VerticalAlignment="Center" Width="200" />
+                        <ComboBox ItemsSource="{Binding Themes}" SelectedItem="{Binding Theme}" Width="160" />
+                    </StackPanel>
+
+                    <Border Classes="hairline" Margin="0,16,0,6" />
+                    <TextBlock Text="BACKUPS" Classes="caption" />
+                    <TextBlock Classes="small muted" TextWrapping="Wrap"
+                               Text="A copy of all recipes is made automatically each day the app is opened; the last 30 are kept. Put the folder in OneDrive or Dropbox to keep a copy off this computer." />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBox Text="{Binding BackupFolder}" IsReadOnly="True" Classes="mono" FontSize="12" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                            <Button Content="Change…" Command="{Binding ChangeBackupFolderCommand}" />
+                            <Button Content="Open folder" Command="{Binding OpenBackupFolderCommand}" />
+                            <Button Classes="accent" Content="Back up now" Command="{Binding BackupNowCommand}" />
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{Binding BackupError, StringFormat='Last automatic backup failed: {0}'}" Classes="small danger" TextWrapping="Wrap"
+                               IsVisible="{Binding BackupError, Converter={x:Static svc:Converters.NotEmpty}}" />
+                    <ListBox ItemsSource="{Binding BackupFiles}" SelectedItem="{Binding SelectedBackup}" MaxHeight="220">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="vm:BackupFile">
+                                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                    <TextBlock Text="{Binding When}" />
+                                    <TextBlock Grid.Column="1" Text="{Binding Size}" Classes="small muted mono" />
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Restore selected backup…" Command="{Binding RestoreCommand}" />
+                        <TextBlock Text="Brings every recipe back to how it was then." Classes="small muted" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <Border Classes="hairline" Margin="0,16,0,6" />
+                    <TextBlock Text="TOOLS" Classes="caption" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Calculator" Command="{Binding OpenCalculatorCommand}" />
+                        <Button Content="Online cooking converter" Command="{Binding OpenOnlineConverterCommand}" />
+                    </StackPanel>
+
+                    <Border Classes="hairline" Margin="0,16,0,6" />
+                    <TextBlock Text="DATA FILE" Classes="caption" />
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                        <TextBox Text="{Binding DatabasePath}" IsReadOnly="True" Classes="mono" FontSize="12" />
+                        <Button Grid.Column="1" Content="Open folder" Command="{Binding OpenDataFolderCommand}" />
+                    </Grid>
+                    <TextBlock Text="{Binding AboutText}" Classes="small muted" Margin="0,16,0,0" />
+                    <TextBlock Text="{Binding UpdateStatus}" Classes="small muted" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </TabItem>
+
+        <!-- ===================================================== Units -->
+        <TabItem Header="Units &amp; conversions">
+            <Grid ColumnDefinitions="*,24,*" RowDefinitions="*,Auto" Margin="24,16">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="UNITS" Classes="caption" Margin="0,0,0,8" />
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                        <Button Content="Add unit" Command="{Binding AddUnitCommand}" />
+                        <Button Classes="ghost" Content="Delete" Command="{Binding DeleteUnitCommand}" />
+                    </StackPanel>
+                    <DataGrid x:Name="UnitGrid" ItemsSource="{Binding UnitRows}" SelectedItem="{Binding SelectedUnit}" AutoGenerateColumns="False"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:DataType="vm:UnitRow" Header="Unit" Binding="{Binding Code}" Width="90" />
+                            <DataGridTextColumn x:DataType="vm:UnitRow" Header="Description" Binding="{Binding Description}" Width="*" />
+                            <DataGridCheckBoxColumn x:DataType="vm:UnitRow" Header="Volume" Binding="{Binding IsVolume}" Width="90" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <DockPanel Grid.Column="2">
+                    <TextBlock DockPanel.Dock="Top" Text="CONVERSIONS  ·  1 FROM = FACTOR × TO" Classes="caption" Margin="0,0,0,8" />
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                        <Button Content="Add conversion" Command="{Binding AddConversionCommand}" />
+                        <Button Classes="ghost" Content="Delete" Command="{Binding DeleteConversionCommand}" />
+                    </StackPanel>
+                    <DataGrid x:Name="ConversionGrid" ItemsSource="{Binding ConversionRows}" SelectedItem="{Binding SelectedConversion}" AutoGenerateColumns="False"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:DataType="vm:ConversionRow" Header="From" Binding="{Binding From}" Width="*" />
+                            <DataGridTextColumn x:DataType="vm:ConversionRow" Header="To" Binding="{Binding To}" Width="*" />
+                            <DataGridTextColumn x:DataType="vm:ConversionRow" Header="Factor" Width="*"
+                                                Binding="{Binding Factor, Converter={x:Static svc:NumberConverter.Instance}, ConverterParameter='0.######'}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <Border Grid.Row="1" Grid.ColumnSpan="3" Classes="card" Padding="14,10" Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="Quick conversion" Classes="h2" VerticalAlignment="Center" Margin="0,0,8,0" />
+                        <TextBox Width="90" HorizontalContentAlignment="Right" Text="{Binding TestAmount, Converter={x:Static svc:NumberConverter.Instance}}" />
+                        <ComboBox ItemsSource="{Binding UnitCodes}" SelectedItem="{Binding TestFrom}" Width="90" />
+                        <b:Icon Data="{StaticResource Bolt.Icon.ChevronRight}" Size="14" VerticalAlignment="Center" />
+                        <ComboBox ItemsSource="{Binding UnitCodes}" SelectedItem="{Binding TestTo}" Width="90" />
+                        <TextBlock Text="{Binding TestResult}" Classes="h2" VerticalAlignment="Center" Margin="10,0,0,0" />
+                        <Button Classes="link" Content="Copy" Command="{Binding CopyConversionCommand}" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </TabItem>
+
+        <!-- ===================================================== Substances -->
+        <TabItem Header="Volume ↔ weight">
+            <Grid ColumnDefinitions="420,24,*" Margin="24,16">
+                <DockPanel>
+                    <TextBox DockPanel.Dock="Top" Text="{Binding SubstanceSearch}" PlaceholderText="Search substances" Margin="0,0,0,8">
+                        <TextBox.InnerLeftContent>
+                            <b:Icon Data="{StaticResource Bolt.Icon.Search}" Size="14" Margin="10,0,0,0" />
+                        </TextBox.InnerLeftContent>
+                    </TextBox>
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                        <Button Content="Add substance" Command="{Binding AddSubstanceCommand}" />
+                        <Button Classes="ghost" Content="Delete" Command="{Binding DeleteSubstanceCommand}" />
+                    </StackPanel>
+                    <DataGrid x:Name="SubstanceGrid" ItemsSource="{Binding SubstanceRows}" SelectedItem="{Binding Substance}" AutoGenerateColumns="False"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:DataType="vm:SubstanceRow" Header="Substance" Binding="{Binding Name}" Width="*" />
+                            <DataGridTextColumn x:DataType="vm:SubstanceRow" Header="Density g/ml" Width="120"
+                                                Binding="{Binding Density, Converter={x:Static svc:NumberConverter.Instance}}" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <Border Grid.Column="2" Classes="card" Padding="18,14" VerticalAlignment="Top">
+                    <StackPanel Spacing="10">
+                        <TextBlock Text="Convert" Classes="title" />
+                        <TextBlock Text="{Binding Substance.Name, FallbackValue='—'}" Classes="secondary" />
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBox Width="90" HorizontalContentAlignment="Right" Text="{Binding DensityQty, Converter={x:Static svc:NumberConverter.Instance}}" />
+                            <ComboBox ItemsSource="{Binding DensityUnits}" SelectedItem="{Binding DensityFrom}" Width="190">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="m:DensityConversionUnit"><TextBlock Text="{Binding Name}" /></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <b:Icon Data="{StaticResource Bolt.Icon.ChevronRight}" Size="14" VerticalAlignment="Center" />
+                            <ComboBox ItemsSource="{Binding DensityUnits}" SelectedItem="{Binding DensityTo}" Width="190">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate DataType="m:DensityConversionUnit"><TextBlock Text="{Binding Name}" /></DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <TextBlock Text="{Binding DensityResult}" Classes="h2" TextWrapping="Wrap" />
+                        <Button Classes="link" Content="More conversions online…" Command="{Binding OpenOnlineConverterCommand}" HorizontalAlignment="Left" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </TabItem>
+
+        <!-- ===================================================== Lists -->
+        <TabItem Header="Lists">
+            <DockPanel Margin="24,16" MaxWidth="640" HorizontalAlignment="Left">
+                <ComboBox DockPanel.Dock="Top" ItemsSource="{Binding LookupLists}" SelectedItem="{Binding Lookup}" Width="320" Margin="0,0,0,10" />
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                    <Button Content="Add" Command="{Binding AddEntryCommand}" />
+                    <Button Classes="ghost" Content="Delete" Command="{Binding DeleteEntryCommand}" />
+                    <TextBlock Text="Double-click a name to rename it." Classes="small muted" VerticalAlignment="Center" Margin="8,0,0,0" />
+                </StackPanel>
+                <DataGrid x:Name="EntryGrid" ItemsSource="{Binding Entries}" SelectedItem="{Binding SelectedEntry}" AutoGenerateColumns="False"
+                          GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn x:DataType="vm:NamedRow" Header="Name" Binding="{Binding Name}" Width="*" />
+                        <DataGridTextColumn x:DataType="vm:NamedRow" Header="Used by" Binding="{Binding Uses}" Width="100" IsReadOnly="True" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
+</UserControl>

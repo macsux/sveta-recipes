@@ -1,0 +1,334 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.RecipeEditorView"
+             x:DataType="vm:RecipeEditorViewModel">
+    <UserControl.KeyBindings>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding Owner.SaveCommand}" />
+    </UserControl.KeyBindings>
+    <DockPanel Margin="18,12,18,12">
+        <!-- Title + recipe actions -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+            <StackPanel VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="{Binding Title}" Classes="title" TextTrimming="CharacterEllipsis" />
+                <TextBlock Text="{Binding Dates}" Classes="small muted" />
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                <Button Classes="accent" Content="Save" Command="{Binding Owner.SaveCommand}" IsEnabled="{Binding IsDirty}" ToolTip.Tip="Ctrl+S" />
+                <Button Classes="ghost" Content="Undo changes" Command="{Binding Owner.RevertCommand}" IsVisible="{Binding IsDirty}" />
+                <Border Classes="vrule" Margin="4,6" />
+                <Button Content="Scale &amp; preview" Command="{Binding Owner.ScaleAndPreviewCommand}" />
+                <Button Content="Open in window" Command="{Binding Owner.OpenInWindowCommand}" ToolTip.Tip="Keep a copy of this recipe open beside the main window" />
+                <Button Content="Print" Command="{Binding Owner.PrintRecipeCommand}" />
+                <Button Classes="ghost" Content="Duplicate" Command="{Binding Owner.DuplicateCommand}" />
+                <Button Classes="ghost" Content="Delete" Command="{Binding Owner.DeleteCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- Details + costs -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,12,280" Margin="0,12,0,0">
+            <Border Classes="card" Padding="16,12">
+                <Grid ColumnDefinitions="Auto,*,20,Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+                    <TextBlock Text="Name" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding Name}" PlaceholderText="Recipe name" />
+
+                    <TextBlock Grid.Row="1" Text="Category" Classes="secondary" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding Category}" HorizontalAlignment="Stretch" />
+                    <TextBlock Grid.Row="1" Grid.Column="3" Text="Measured in" Classes="secondary" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="1" Grid.Column="4" ItemsSource="{Binding Units}" SelectedItem="{Binding Unit}" HorizontalAlignment="Stretch" />
+
+                    <TextBlock Grid.Row="2" Text="Servings" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Servings, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Grid.Row="2" Grid.Column="3" Text="Weight / serving" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="2" Grid.Column="4" Text="{Binding WeightPerServing, Converter={x:Static svc:NumberConverter.Instance}}" />
+
+                    <TextBlock Grid.Row="3" Text="Labour (h)" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding LabourHours, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Grid.Row="3" Grid.Column="3" Text="Cost / serving" Classes="secondary" VerticalAlignment="Center" />
+                    <ComboBox Grid.Row="3" Grid.Column="4" ItemsSource="{x:Static vm:RecipeEditorViewModel.CostMethods}" SelectedItem="{Binding CostMethod}" HorizontalAlignment="Stretch" />
+
+                    <TextBlock Grid.Row="4" Text="Notes" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding Notes}" PlaceholderText="Oven, timing… e.g. 270F 30min" />
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="2" Classes="card" Padding="16,12">
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
+                    <TextBlock Text="Total weight" Classes="secondary" />
+                    <TextBlock Grid.Column="1" Classes="mono">
+                        <Run Text="{Binding TotalAmount, StringFormat='{}{0:#,##0.#}'}" />
+                        <Run Text="{Binding Unit}" />
+                    </TextBlock>
+                    <TextBlock Grid.Row="1" Text="Ingredients" Classes="secondary" />
+                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="mono" Text="{Binding ComponentsCost, StringFormat='{}{0:C2}'}" />
+                    <TextBlock Grid.Row="2" Classes="secondary">
+                        <Run Text="Labour " /><Run Text="{Binding LabourRateText}" Foreground="{DynamicResource Bolt.Fg.Faint}" />
+                    </TextBlock>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Classes="mono" Text="{Binding LabourCost, StringFormat='{}{0:C2}'}" />
+                    <Border Grid.Row="3" Grid.ColumnSpan="2" Classes="hairline" Margin="0,3" />
+                    <TextBlock Grid.Row="4" Text="Total cost" Classes="h2" />
+                    <TextBlock Grid.Row="4" Grid.Column="1" Classes="mono strong" FontWeight="SemiBold" Text="{Binding TotalCost, StringFormat='{}{0:C2}'}" />
+                    <TextBlock Grid.Row="5" Text="Cost per serving" Classes="secondary" />
+                    <TextBlock Grid.Row="5" Grid.Column="1" Classes="mono" Text="{Binding CostPerServing, Converter={x:Static svc:Converters.Money}}" />
+                    <TextBlock Grid.Row="6" Text="Selling price" Classes="secondary" VerticalAlignment="Center" Margin="0,6,0,0" />
+                    <TextBox Grid.Row="6" Grid.Column="1" Width="96" Margin="0,6,0,0" HorizontalContentAlignment="Right"
+                             Text="{Binding SellPrice, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Grid.Row="7" Text="Price per serving" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="7" Grid.Column="1" Width="96" HorizontalContentAlignment="Right"
+                             Text="{Binding PricePerServing, Converter={x:Static svc:NumberConverter.Instance}}" />
+                </Grid>
+            </Border>
+        </Grid>
+
+        <TabControl Margin="0,8,0,0">
+            <!-- ===================================================== Ingredients -->
+            <TabItem Header="Ingredients">
+                <DockPanel Margin="0,10,0,0">
+                    <!-- add bar -->
+                    <Border DockPanel.Dock="Top" Classes="card" Padding="10,8" Margin="0,0,0,8">
+                        <Grid ColumnDefinitions="Auto,*,80,80,*,Auto,Auto" ColumnSpacing="8">
+                            <Grid.KeyBindings>
+                                <KeyBinding Gesture="Enter" Command="{Binding AddLineCommand}" />
+                            </Grid.KeyBindings>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <ToggleButton Classes="pill" Content="Ingredient" IsChecked="{Binding !AddRecipeMode}" />
+                                <ToggleButton Classes="pill" Content="Recipe" IsChecked="{Binding AddRecipeMode}" />
+                            </StackPanel>
+                            <AutoCompleteBox Grid.Column="1" ItemsSource="{Binding AddCandidates}" SelectedItem="{Binding AddPick}"
+                                             Text="{Binding AddSearch}" FilterMode="Contains" MinimumPrefixLength="1" MaxDropDownHeight="360"
+                                             PlaceholderText="Type to find…" ValueMemberBinding="{Binding Name, DataType=vm:PickItem}">
+                                <AutoCompleteBox.ItemTemplate>
+                                    <DataTemplate DataType="vm:PickItem">
+                                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                            <TextBlock Text="{Binding Name}" />
+                                            <TextBlock Grid.Column="1" Text="{Binding Detail}" Classes="small muted" />
+                                        </Grid>
+                                    </DataTemplate>
+                                </AutoCompleteBox.ItemTemplate>
+                            </AutoCompleteBox>
+                            <TextBox Grid.Column="2" Text="{Binding AddAmount}" PlaceholderText="Qty" HorizontalContentAlignment="Right" />
+                            <ComboBox Grid.Column="3" ItemsSource="{Binding Units}" SelectedItem="{Binding AddUnit}" HorizontalAlignment="Stretch" />
+                            <TextBox Grid.Column="4" Text="{Binding AddNotes}" PlaceholderText="Notes (optional)" />
+                            <TextBlock Grid.Column="5" Text="{Binding AddPreview}" Classes="mono small muted" VerticalAlignment="Center" MinWidth="64"
+                                       ToolTip.Tip="What this line will cost" />
+                            <StackPanel Grid.Column="6" Orientation="Horizontal" Spacing="4">
+                                <Button Classes="accent" Content="{Binding AddButtonText}" Command="{Binding AddLineCommand}" />
+                                <Button Classes="ghost" Content="Cancel" Command="{Binding CancelEditCommand}"
+                                        IsVisible="{Binding EditingLine, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- line tools -->
+                    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
+                        <Button Content="Edit" Command="{Binding EditLineCommand}" ToolTip.Tip="Change the selected line (or double-click it)" />
+                        <Button Content="Move up" Command="{Binding MoveUpCommand}" />
+                        <Button Content="Move down" Command="{Binding MoveDownCommand}" />
+                        <Button Content="Add divider" Command="{Binding AddSeparatorCommand}" />
+                        <Button Content="Open" Command="{Binding OpenLineCommand}" ToolTip.Tip="Open the selected ingredient or recipe" />
+                        <Button Classes="ghost" Content="Remove" Command="{Binding RemoveLineCommand}" />
+                    </StackPanel>
+                    <Border DockPanel.Dock="Bottom" Classes="card" Padding="10,6" Margin="0,8,0,0"
+                            IsVisible="{Binding Warnings, Converter={x:Static svc:Converters.NotEmpty}}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <b:Icon Data="{StaticResource Bolt.Icon.Alert}" Size="14" Foreground="{DynamicResource Bolt.Warning}" VerticalAlignment="Top" Margin="0,2,0,0" />
+                            <TextBlock Text="{Binding Warnings}" Classes="small" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <DataGrid x:Name="LineGrid" ItemsSource="{Binding Lines}" SelectedItem="{Binding SelectedLine}" AutoGenerateColumns="False"
+                              CanUserSortColumns="False" CanUserReorderColumns="False" CanUserResizeColumns="True"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Single">
+                        <DataGrid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Edit…" Command="{Binding EditLineCommand}" />
+                                <MenuItem Header="Open ingredient / recipe" Command="{Binding OpenLineCommand}" />
+                                <Separator />
+                                <MenuItem Header="Move up" Command="{Binding MoveUpCommand}" />
+                                <MenuItem Header="Move down" Command="{Binding MoveDownCommand}" />
+                                <MenuItem Header="Add divider below" Command="{Binding AddSeparatorCommand}" />
+                                <Separator />
+                                <MenuItem Header="Remove" Command="{Binding RemoveLineCommand}" />
+                            </ContextMenu>
+                        </DataGrid.ContextMenu>
+                        <DataGrid.Columns>
+                            <DataGridTemplateColumn Header="Ingredient / recipe" Width="2*" IsReadOnly="True">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="vm:LineViewModel">
+                                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="10,0" VerticalAlignment="Center" Tag="line-name" Background="Transparent">
+                                            <b:Icon Data="{StaticResource Bolt.Icon.Alert}" Size="12" Foreground="{DynamicResource Bolt.Warning}"
+                                                    IsVisible="{Binding HasWarning}" ToolTip.Tip="{Binding Warning}" />
+                                            <TextBlock Text="{Binding DisplayName}" FontWeight="{Binding IsSubRecipe, Converter={x:Static svc:Converters.BoldIf}}" />
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn x:DataType="vm:LineViewModel" Header="Qty" Binding="{Binding AmountText}" Width="90" />
+                            <DataGridTemplateColumn Header="Unit" Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="vm:LineViewModel">
+                                        <TextBlock Text="{Binding UnitText}" Margin="10,0" VerticalAlignment="Center" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate DataType="vm:LineViewModel">
+                                        <ComboBox ItemsSource="{Binding $parent[DataGrid].((vm:RecipeEditorViewModel)DataContext).Units}"
+                                                  SelectedItem="{Binding Unit}" HorizontalAlignment="Stretch" IsEnabled="{Binding !IsSeparator}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn x:DataType="vm:LineViewModel" Header="%" Binding="{Binding PercentText}" Width="70" IsReadOnly="True" />
+                            <DataGridTextColumn x:DataType="vm:LineViewModel" Header="Cost" Binding="{Binding CostText}" Width="90" IsReadOnly="True" />
+                            <DataGridTextColumn x:DataType="vm:LineViewModel" Header="Notes" Binding="{Binding Notes}" Width="3*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ===================================================== Method -->
+            <TabItem Header="Method">
+                <TextBox Margin="0,10,0,0" Text="{Binding Instructions}" AcceptsReturn="True" TextWrapping="Wrap"
+                         VerticalContentAlignment="Top" PlaceholderText="How to make it…" />
+            </TabItem>
+
+            <!-- ===================================================== Label -->
+            <TabItem Header="Label">
+                <ScrollViewer>
+                    <Grid Margin="0,14,0,0" MaxWidth="720" HorizontalAlignment="Left" ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+                        <TextBlock Text="Label title" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Text="{Binding LabelTitle}" PlaceholderText="{Binding Name}" />
+                        <TextBlock Grid.Row="1" Text="Label text" Classes="secondary" Margin="0,8,0,0" />
+                        <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding LabelText}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="110"
+                                 VerticalContentAlignment="Top" PlaceholderText="Ingredients and allergens for the label" />
+                        <TextBlock Grid.Row="2" Text="Charge code" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding ChargeCode}" Width="120" HorizontalAlignment="Left" />
+                        <TextBlock Grid.Row="3" Text="Description" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Description}" />
+                        <StackPanel Grid.Row="4" Grid.Column="1" Orientation="Horizontal" Spacing="16">
+                            <CheckBox Content="Label has been printed" IsChecked="{Binding LabelPrinted}" />
+                            <Button Content="Fill label text from ingredients" Command="{Binding FillLabelFromIngredientsCommand}" />
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===================================================== Pan & layers -->
+            <TabItem Header="Pan &amp; layers">
+                <ScrollViewer>
+                    <StackPanel Margin="0,14,0,0" Spacing="10" MaxWidth="720" HorizontalAlignment="Left">
+                        <Grid ColumnDefinitions="140,Auto" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="10">
+                            <TextBlock Text="Pan" Classes="secondary" VerticalAlignment="Center" />
+                            <ComboBox Grid.Column="1" ItemsSource="{x:Static vm:RecipeEditorViewModel.Shapes}" SelectedItem="{Binding Shape}" Width="220" />
+                            <TextBlock Grid.Row="1" Text="{Binding DimensionsLabel}" Classes="secondary" VerticalAlignment="Center" TextWrapping="Wrap" IsVisible="{Binding HasPan}" />
+                            <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="6" IsVisible="{Binding HasPan}">
+                                <TextBox Width="70" Text="{Binding Width, Converter={x:Static svc:NumberConverter.Instance}}" IsVisible="{Binding !IsRound}" PlaceholderText="W" />
+                                <TextBlock Text="×" VerticalAlignment="Center" IsVisible="{Binding !IsRound}" />
+                                <TextBox Width="70" Text="{Binding Length, Converter={x:Static svc:NumberConverter.Instance}}" PlaceholderText="Ø / L" />
+                                <TextBlock Text="×" VerticalAlignment="Center" />
+                                <TextBox Width="70" Text="{Binding Height, Converter={x:Static svc:NumberConverter.Instance}}" PlaceholderText="H" />
+                            </StackPanel>
+                            <TextBlock Grid.Row="2" Text="Area · volume" Classes="secondary" VerticalAlignment="Center" IsVisible="{Binding HasPan}" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Classes="mono" VerticalAlignment="Center" IsVisible="{Binding HasPan}">
+                                <Run Text="{Binding Area, StringFormat='{}{0:#,##0} cm²', TargetNullValue='—'}" />
+                                <Run Text="  ·  " />
+                                <Run Text="{Binding Volume, StringFormat='{}{0:#,##0} cm³', TargetNullValue='—'}" />
+                            </TextBlock>
+                        </Grid>
+
+                        <Border Classes="hairline" Margin="0,8" />
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="LAYERS" Classes="caption" VerticalAlignment="Center" />
+                            <Button Grid.Column="1" Content="Add layer" Command="{Binding AddLayerCommand}" />
+                        </Grid>
+                        <TextBlock Text="Top layer first. Pick the layer colour and its text colour." Classes="small muted" />
+                        <ItemsControl ItemsSource="{Binding Layers}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:LayerViewModel">
+                                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8" Margin="0,0,0,6">
+                                        <Border CornerRadius="6" Padding="10,6" Background="{Binding BackColor, Converter={x:Static svc:Converters.ColorBrush}}">
+                                            <TextBox Text="{Binding Name}" Foreground="{Binding ForeColor, Converter={x:Static svc:Converters.ColorBrush}}" />
+                                        </Border>
+                                        <ColorPicker Grid.Column="1" Color="{Binding BackColor}" VerticalAlignment="Center" ToolTip.Tip="Layer colour" />
+                                        <ColorPicker Grid.Column="2" Color="{Binding ForeColor}" VerticalAlignment="Center" ToolTip.Tip="Text colour" />
+                                        <Button Grid.Column="3" Classes="icon" VerticalAlignment="Center" ToolTip.Tip="Remove layer"
+                                                Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemoveLayerCommand}" CommandParameter="{Binding}">
+                                            <b:Icon Data="{StaticResource Bolt.Icon.Close}" Size="14" />
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ===================================================== Tags -->
+            <TabItem Header="Tags">
+                <ItemsControl ItemsSource="{Binding Tags}" Margin="0,14,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel ItemSpacing="18" LineSpacing="10" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:TagChoice">
+                            <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </TabItem>
+
+            <!-- ===================================================== Photos -->
+            <TabItem Header="Photos &amp; files">
+                <DockPanel Margin="0,10,0,0">
+                    <Button DockPanel.Dock="Top" HorizontalAlignment="Left" Content="Add photo or file…" Command="{Binding AddPhotoCommand}" Margin="0,0,0,10" />
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Photos}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel ItemSpacing="12" LineSpacing="12" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="vm:PhotoViewModel">
+                                    <Border Classes="card" Padding="8" Width="240">
+                                        <StackPanel Spacing="6">
+                                            <Image Source="{Binding Image}" Height="170" Stretch="Uniform" IsVisible="{Binding IsImage}" />
+                                            <StackPanel Height="170" Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="{Binding !IsImage}">
+                                                <b:Icon Data="{StaticResource Bolt.Icon.FileText}" Size="40" HorizontalAlignment="Center" />
+                                                <TextBlock Text="{Binding Size}" Classes="small muted" HorizontalAlignment="Center" />
+                                            </StackPanel>
+                                            <TextBlock Text="{Binding Caption}" Classes="small muted" TextTrimming="CharacterEllipsis" />
+                                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                                <Button Content="Open" Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).OpenPhotoCommand}" CommandParameter="{Binding}" />
+                                                <Button Classes="ghost" Content="Remove" Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).RemovePhotoCommand}" CommandParameter="{Binding}" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </DockPanel>
+            </TabItem>
+
+            <!-- ===================================================== Used in -->
+            <TabItem Header="Used in">
+                <StackPanel Margin="0,14,0,0" Spacing="6">
+                    <TextBlock Text="Not used inside any other recipe." Classes="muted"
+                               IsVisible="{Binding NoParents}" />
+                    <ItemsControl ItemsSource="{Binding UsedIn}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:ParentLink">
+                                <Button Classes="link" Content="{Binding Name}"
+                                        Command="{Binding $parent[ItemsControl].((vm:RecipeEditorViewModel)DataContext).OpenParentCommand}" CommandParameter="{Binding}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</UserControl>

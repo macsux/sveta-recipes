@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.PickRecipesView"
+             x:DataType="vm:PickRecipesViewModel">
+    <DockPanel Margin="20,16">
+        <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,10">
+            <TextBlock Text="Add recipes to the list" Classes="title" />
+            <TextBlock Text="Tick recipes and say how many batches. Sub-recipe ingredients are included, scaled." Classes="small muted" TextWrapping="Wrap" />
+            <TextBox Text="{Binding Search}" PlaceholderText="Search recipes">
+                <TextBox.InnerLeftContent>
+                    <b:Icon Data="{StaticResource Bolt.Icon.Search}" Size="14" Margin="10,0,0,0" />
+                </TextBox.InnerLeftContent>
+            </TextBox>
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Classes="accent" Content="Add to list" Command="{Binding AddCommand}" />
+            <Button Content="Cancel" Command="{Binding CancelCommand}" IsCancel="True" />
+        </StackPanel>
+        <ListBox ItemsSource="{Binding Visible}">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="vm:RecipePick">
+                    <Grid ColumnDefinitions="Auto,*,80" ColumnSpacing="8">
+                        <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                        <TextBox Grid.Column="2" HorizontalContentAlignment="Right" IsEnabled="{Binding IsChecked}"
+                                 Text="{Binding Times, Converter={x:Static svc:NumberConverter.Instance}}" ToolTip.Tip="Batches" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

@@ -1,0 +1,157 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.CompaniesView"
+             x:DataType="vm:CompaniesViewModel">
+    <Grid ColumnDefinitions="290,Auto,*">
+        <DockPanel Margin="14,12,8,12">
+            <StackPanel DockPanel.Dock="Top" Spacing="8" Margin="0,0,0,8">
+                <TextBox Text="{Binding Search}" PlaceholderText="Search companies">
+                    <TextBox.InnerLeftContent>
+                        <b:Icon Data="{StaticResource Bolt.Icon.Search}" Size="14" Margin="10,0,0,0" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+                <ComboBox ItemsSource="{Binding ShowOptions}" SelectedItem="{Binding Show}" HorizontalAlignment="Stretch" />
+            </StackPanel>
+            <Button DockPanel.Dock="Bottom" Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                    Command="{Binding NewCommand}" Margin="0,8,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <b:Icon Data="{StaticResource Bolt.Icon.Plus}" Size="14" />
+                    <TextBlock Text="New company" />
+                </StackPanel>
+            </Button>
+            <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="vm:CompanyListItem">
+                        <StackPanel Spacing="1">
+                            <TextBlock Text="{Binding Name}" />
+                            <TextBlock Text="{Binding Detail}" Classes="small muted" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" Width="1" />
+
+        <ScrollViewer Grid.Column="2" IsVisible="{Binding HasCompany}">
+            <StackPanel Margin="18,12" Spacing="12" MaxWidth="940" HorizontalAlignment="Left">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Name}" Classes="title" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                        <Button Classes="accent" Content="Save" Command="{Binding SaveCommand}" IsEnabled="{Binding IsDirty}" />
+                        <Button Classes="ghost" Content="Undo changes" Command="{Binding RevertCommand}" IsVisible="{Binding IsDirty}" />
+                        <Button Classes="ghost" Content="Delete" Command="{Binding DeleteCommand}" />
+                    </StackPanel>
+                </Grid>
+
+                <Border Classes="card" Padding="16,12">
+                    <Grid ColumnDefinitions="110,*,20,110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+                        <TextBlock Text="Company" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Column="1" Grid.ColumnSpan="4" Text="{Binding Name}" />
+                        <TextBlock Grid.Row="1" Text="Is a" Classes="secondary" VerticalAlignment="Center" />
+                        <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal" Spacing="18">
+                            <CheckBox Content="Customer" IsChecked="{Binding IsCustomer}" />
+                            <CheckBox Content="Supplier" IsChecked="{Binding IsSupplier}" />
+                        </StackPanel>
+                        <TextBlock Grid.Row="1" Grid.Column="3" Text="Date entered" Classes="secondary" VerticalAlignment="Center" />
+                        <CalendarDatePicker Grid.Row="1" Grid.Column="4" SelectedDate="{Binding DateEntered}" HorizontalAlignment="Stretch" />
+                        <TextBlock Grid.Row="2" Text="Contact" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Contact}" />
+                        <TextBlock Grid.Row="2" Grid.Column="3" Text="Phone" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="2" Grid.Column="4" Text="{Binding Phone}" />
+                        <TextBlock Grid.Row="3" Text="Email" Classes="secondary" VerticalAlignment="Center" />
+                        <Grid Grid.Row="3" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                            <TextBox Text="{Binding Email}" />
+                            <Button Grid.Column="1" Classes="link" Content="Write" Command="{Binding WriteEmailCommand}" />
+                        </Grid>
+                        <TextBlock Grid.Row="3" Grid.Column="3" Text="Toll free" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="3" Grid.Column="4" Text="{Binding TollFree}" />
+                        <TextBlock Grid.Row="4" Text="Website" Classes="secondary" VerticalAlignment="Center" />
+                        <Grid Grid.Row="4" Grid.Column="1" ColumnDefinitions="*,Auto" ColumnSpacing="4">
+                            <TextBox Text="{Binding Website}" />
+                            <Button Grid.Column="1" Classes="link" Content="Open" Command="{Binding OpenWebsiteCommand}" />
+                        </Grid>
+                        <TextBlock Grid.Row="4" Grid.Column="3" Text="Fax" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="4" Grid.Column="4" Text="{Binding Fax}" />
+                        <TextBlock Grid.Row="5" Text="Street" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Street}" />
+                        <TextBlock Grid.Row="5" Grid.Column="3" Text="City" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="5" Grid.Column="4" Text="{Binding City}" />
+                        <TextBlock Grid.Row="6" Text="Province" Classes="secondary" VerticalAlignment="Center" />
+                        <AutoCompleteBox Grid.Row="6" Grid.Column="1" ItemsSource="{Binding Provinces}" Text="{Binding Province}" MinimumPrefixLength="0" FilterMode="StartsWith" />
+                        <TextBlock Grid.Row="6" Grid.Column="3" Text="Postal code" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="6" Grid.Column="4" Text="{Binding PostalCode}" />
+                        <TextBlock Grid.Row="7" Text="Country" Classes="secondary" VerticalAlignment="Center" />
+                        <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Country}" />
+                    </Grid>
+                </Border>
+
+                <TextBlock Text="NOTES" Classes="caption" />
+                <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="60" VerticalContentAlignment="Top" />
+
+                <!-- customer side -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsCustomer}">
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                        <TextBlock Classes="caption" VerticalAlignment="Center">
+                            <Run Text="INVOICES  ·  " /><Run Text="{Binding InvoiceSummary}" />
+                        </TextBlock>
+                        <Button Grid.Column="1" Content="New invoice" Command="{Binding NewInvoiceCommand}" />
+                    </Grid>
+                    <DataGrid ItemsSource="{Binding Invoices}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="260"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:DataType="vm:CompanyInvoiceLine" Header="Invoice" Binding="{Binding Number}" Width="90" />
+                            <DataGridTextColumn x:DataType="vm:CompanyInvoiceLine" Header="Date" Binding="{Binding Date}" Width="120" />
+                            <DataGridTextColumn x:DataType="vm:CompanyInvoiceLine" Header="Amount" Binding="{Binding Total}" Width="110" />
+                            <DataGridTextColumn x:DataType="vm:CompanyInvoiceLine" Header="Status" Binding="{Binding Status}" Width="*" />
+                            <DataGridTemplateColumn Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="vm:CompanyInvoiceLine">
+                                        <Button Classes="link" Content="Open" Command="{Binding $parent[DataGrid].((vm:CompaniesViewModel)DataContext).OpenInvoiceCommand}" CommandParameter="{Binding}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+
+                <!-- supplier side -->
+                <StackPanel Spacing="8" IsVisible="{Binding IsSupplier}">
+                    <TextBlock Text="SELLS" Classes="caption" Margin="0,6,0,0" />
+                    <ItemsControl ItemsSource="{Binding Categories}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel ItemSpacing="18" LineSpacing="8" />
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="vm:CategoryChoice">
+                                <CheckBox Content="{Binding Name}" IsChecked="{Binding IsSelected}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="PRICES (EDIT ON THE INGREDIENTS TAB)" Classes="caption" Margin="0,6,0,0" />
+                    <DataGrid ItemsSource="{Binding Prices}" AutoGenerateColumns="False" IsReadOnly="True" MaxHeight="320"
+                              GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn x:DataType="vm:SupplierPriceLine" Header="Ingredient" Binding="{Binding Ingredient}" Width="2*" />
+                            <DataGridTextColumn x:DataType="vm:SupplierPriceLine" Header="Brand" Binding="{Binding Brand}" Width="*" />
+                            <DataGridTextColumn x:DataType="vm:SupplierPriceLine" Header="Pack" Binding="{Binding Pack}" Width="100" />
+                            <DataGridTextColumn x:DataType="vm:SupplierPriceLine" Header="Price" Binding="{Binding Price}" Width="90" />
+                            <DataGridTextColumn x:DataType="vm:SupplierPriceLine" Header="$ / kg" Binding="{Binding PerKg}" Width="90" />
+                            <DataGridTemplateColumn Width="70">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate DataType="vm:SupplierPriceLine">
+                                        <Button Classes="link" Content="Open" Command="{Binding $parent[DataGrid].((vm:CompaniesViewModel)DataContext).OpenIngredientCommand}" CommandParameter="{Binding}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

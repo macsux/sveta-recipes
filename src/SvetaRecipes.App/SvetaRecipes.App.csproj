@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>SvetaRecipes</AssemblyName>
+    <Product>Sveta's Recipes</Product>
+    <Version>1.0.0</Version>
+    <ApplicationIcon Condition="Exists('Assets\app.ico')">Assets\app.ico</ApplicationIcon>
+    <!-- Fast cold start on an old PC: precompiled code, no tiered JIT warm-up for startup paths. -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <TieredPGO>true</TieredPGO>
+    <DebugType Condition="'$(Configuration)' == 'Release'">none</DebugType>
+  </PropertyGroup>
+
+  <!-- Native packages (Skia, HarfBuzz) ship ~100 MB of .pdb files nobody on her PC needs. -->
+  <Target Name="DropPublishedSymbols" AfterTargets="Publish">
+    <Delete Files="$([System.IO.Directory]::GetFiles('$(PublishDir)', '*.pdb'))" />
+  </Target>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.1.2" />
+    <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.1.2" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SvetaRecipes.Core\SvetaRecipes.Core.csproj" />
+    <ProjectReference Include="..\SvetaRecipes.Reports\SvetaRecipes.Reports.csproj" />
+    <ProjectReference Include="$(BoltThemeDir)\Bolt.Theme.csproj" />
+  </ItemGroup>
+</Project>

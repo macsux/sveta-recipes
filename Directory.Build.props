@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- Bolt.Theme lives in the aibolt repo; override with -p:BoltThemeDir=... if it moves. -->
+    <BoltThemeDir Condition="'$(BoltThemeDir)' == ''">$(MSBuildThisFileDirectory)..\aibolt\src\Bolt.Theme</BoltThemeDir>
+  </PropertyGroup>
+</Project>

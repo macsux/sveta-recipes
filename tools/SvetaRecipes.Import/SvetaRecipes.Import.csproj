@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- One-way import from the legacy Access files. Needs mdbtools (brew install mdbtools); run on the Mac. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SvetaRecipes.Core\SvetaRecipes.Core.csproj" />
+  </ItemGroup>
+</Project>

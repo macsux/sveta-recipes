@@ -1,0 +1,33 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             x:Class="SvetaRecipes.App.Views.AddToShoppingView"
+             x:DataType="vm:AddToShoppingViewModel">
+    <DockPanel Margin="20,16">
+        <StackPanel DockPanel.Dock="Top" Spacing="8">
+            <TextBlock Text="Add to shopping list" Classes="title" />
+            <TextBlock Text="Ingredients from sub-recipes are included, scaled to the amount used. Repeated ingredients are added together."
+                       Classes="small muted" TextWrapping="Wrap" />
+            <TextBlock Text="LIST" Classes="caption" Margin="0,8,0,0" />
+            <ComboBox ItemsSource="{Binding Lists}" SelectedItem="{Binding List}" HorizontalAlignment="Stretch" />
+            <TextBlock Text="RECIPES  ·  HOW MANY BATCHES" Classes="caption" Margin="0,8,0,0" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Classes="accent" Content="Add" Command="{Binding AddCommand}" IsDefault="True" />
+            <Button Content="Cancel" Command="{Binding CancelCommand}" IsCancel="True" />
+        </StackPanel>
+        <ScrollViewer>
+            <ItemsControl ItemsSource="{Binding Picks}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="vm:ShoppingPick">
+                        <Grid ColumnDefinitions="*,90" ColumnSpacing="10" Margin="0,3">
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                            <TextBox Grid.Column="1" HorizontalContentAlignment="Right" Text="{Binding Times, Converter={x:Static svc:NumberConverter.Instance}}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

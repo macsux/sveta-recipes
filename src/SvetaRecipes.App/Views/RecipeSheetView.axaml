@@ -1,0 +1,41 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             x:Class="SvetaRecipes.App.Views.RecipeSheetView"
+             x:DataType="vm:RecipeSheetViewModel">
+    <DockPanel Margin="20,16">
+        <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="0,0,0,10">
+            <TextBlock Text="{Binding Name}" Classes="title" />
+            <TextBlock Text="{Binding Subtitle}" Classes="small muted" />
+            <TextBlock Text="{Binding Costs}" Classes="mono small" Margin="0,6,0,0" />
+        </StackPanel>
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,12,0,0">
+            <Button Classes="accent" Content="Print" Command="{Binding PrintCommand}" />
+            <Button Classes="ghost" Content="Close" Command="{Binding DoneCommand}" />
+        </StackPanel>
+        <Border DockPanel.Dock="Bottom" Classes="card" Padding="12,10" Margin="0,10,0,0" MaxHeight="200" IsVisible="{Binding HasInstructions}">
+            <ScrollViewer>
+                <SelectableTextBlock Text="{Binding Instructions}" TextWrapping="Wrap" />
+            </ScrollViewer>
+        </Border>
+        <DataGrid ItemsSource="{Binding Lines}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Ingredient / recipe" Width="2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:SheetLine">
+                            <TextBlock Text="{Binding Name}" Margin="10,0" VerticalAlignment="Center"
+                                       FontWeight="{Binding IsSubRecipe, Converter={x:Static svc:Converters.BoldIf}}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:DataType="vm:SheetLine" Header="Qty" Binding="{Binding Amount}" Width="80" />
+                <DataGridTextColumn x:DataType="vm:SheetLine" Header="Unit" Binding="{Binding Unit}" Width="64" />
+                <DataGridTextColumn x:DataType="vm:SheetLine" Header="%" Binding="{Binding Percent}" Width="70" />
+                <DataGridTextColumn x:DataType="vm:SheetLine" Header="Cost" Binding="{Binding Money}" Width="80" />
+                <DataGridTextColumn x:DataType="vm:SheetLine" Header="Notes" Binding="{Binding Notes}" Width="2*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

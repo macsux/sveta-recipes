@@ -1,0 +1,16 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:bolt="using:Bolt.Theme"
+             xmlns:local="using:SvetaRecipes.App"
+             x:Class="SvetaRecipes.App.App"
+             RequestedThemeVariant="Light">
+    <!-- All visuals come from Bolt.Theme. DataGrid and ColorPicker have no Bolt templates, so they use Fluent's, which reads Bolt's palette. -->
+    <Application.DataTemplates>
+        <local:ViewLocator />
+    </Application.DataTemplates>
+    <Application.Styles>
+        <bolt:BoltTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml" />
+    </Application.Styles>
+</Application>

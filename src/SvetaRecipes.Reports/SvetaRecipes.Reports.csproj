@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Printable output (recipes, labels, shopping lists) as PDF, opened in the system viewer to print. -->
+  <ItemGroup>
+    <PackageReference Include="QuestPDF" Version="2026.9.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SvetaRecipes.Core\SvetaRecipes.Core.csproj" />
+  </ItemGroup>
+</Project>

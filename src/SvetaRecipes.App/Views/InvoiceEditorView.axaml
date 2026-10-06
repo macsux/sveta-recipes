@@ -1,0 +1,99 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             x:Class="SvetaRecipes.App.Views.InvoiceEditorView"
+             x:DataType="vm:InvoiceEditorViewModel">
+    <DockPanel Margin="20,16">
+        <!-- header -->
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14" RowDefinitions="Auto,Auto" RowSpacing="10">
+            <TextBlock Classes="title" VerticalAlignment="Center">
+                <Run Text="Invoice " /><Run Text="{Binding Number}" />
+            </TextBlock>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Date" Classes="secondary" VerticalAlignment="Center" />
+                <CalendarDatePicker SelectedDate="{Binding Date}" Width="170" />
+            </StackPanel>
+            <TextBlock Grid.Row="1" Text="Customer" Classes="secondary" VerticalAlignment="Center" />
+            <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal" Spacing="8">
+                <ComboBox ItemsSource="{Binding Customers}" SelectedItem="{Binding Customer}" Width="340" PlaceholderText="Choose a customer" />
+                <Button Content="New customer…" Command="{Binding NewCustomerCommand}" />
+                <Button Classes="ghost" Content="Edit" Command="{Binding EditCustomerCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- add an item -->
+        <Border DockPanel.Dock="Top" Classes="card" Padding="10,8" Margin="0,14,0,8">
+            <Grid ColumnDefinitions="*,110,90,Auto" ColumnSpacing="8">
+                <Grid.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding AddItemCommand}" />
+                </Grid.KeyBindings>
+                <AutoCompleteBox ItemsSource="{Binding Picks}" SelectedItem="{Binding NewPick}" Text="{Binding NewName}"
+                                 FilterMode="Contains" MinimumPrefixLength="1" MaxDropDownHeight="320"
+                                 PlaceholderText="Item — pick a recipe (uses its price per serving) or type anything"
+                                 ValueMemberBinding="{Binding Name, DataType=vm:InvoicePick}">
+                    <AutoCompleteBox.ItemTemplate>
+                        <DataTemplate DataType="vm:InvoicePick">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Grid.Column="1" Text="{Binding Detail}" Classes="small muted" />
+                            </Grid>
+                        </DataTemplate>
+                    </AutoCompleteBox.ItemTemplate>
+                </AutoCompleteBox>
+                <TextBox Grid.Column="1" PlaceholderText="Price" HorizontalContentAlignment="Right"
+                         Text="{Binding NewPrice, Converter={x:Static svc:NumberConverter.Instance}}" />
+                <TextBox Grid.Column="2" PlaceholderText="Qty" HorizontalContentAlignment="Right"
+                         Text="{Binding NewQuantity, Converter={x:Static svc:NumberConverter.Instance}}" />
+                <Button Grid.Column="3" Classes="accent" Content="Add" Command="{Binding AddItemCommand}" />
+            </Grid>
+        </Border>
+
+        <!-- footer -->
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,14,0,0">
+            <Button Classes="ghost" Content="Remove item" Command="{Binding RemoveItemCommand}" VerticalAlignment="Top" HorizontalAlignment="Left" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Bottom">
+                <Button Content="Cancel" Command="{Binding CancelCommand}" IsCancel="True" />
+                <Button Content="Save &amp; print" Command="{Binding SaveAndPrintCommand}" />
+                <Button Classes="accent" Content="Save" Command="{Binding SaveCommand}" />
+            </StackPanel>
+        </Grid>
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,320" ColumnSpacing="20" Margin="0,12,0,0">
+            <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" PlaceholderText="Notes printed on the invoice (optional)"
+                     VerticalContentAlignment="Top" MinHeight="90" />
+            <Border Grid.Column="1" Classes="card" Padding="14,10">
+                <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="5">
+                    <TextBlock Text="Subtotal" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding NetText}" Classes="mono" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Row="1" Text="Discount" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="1" Grid.Column="1" HorizontalContentAlignment="Right" Text="{Binding Discount, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Grid.Row="2" Text="Tax" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="2" Grid.Column="1" HorizontalContentAlignment="Right" Text="{Binding Tax1, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Grid.Row="3" Text="Tax 2" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="3" Grid.Column="1" HorizontalContentAlignment="Right" Text="{Binding Tax2, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <Border Grid.Row="4" Grid.ColumnSpan="2" Classes="hairline" Margin="0,3" />
+                    <TextBlock Grid.Row="5" Text="Total" Classes="h2" />
+                    <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding TotalText}" Classes="mono strong" FontWeight="SemiBold" HorizontalAlignment="Right" />
+                    <TextBlock Grid.Row="6" Text="Received" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBox Grid.Row="6" Grid.Column="1" HorizontalContentAlignment="Right" Text="{Binding AmountReceived, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <CheckBox Grid.Row="7" Content="Paid" IsChecked="{Binding IsPaid}" />
+                    <TextBlock Grid.Row="7" Grid.Column="1" Classes="mono" HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Run Text="due " Foreground="{DynamicResource Bolt.Fg.Muted}" /><Run Text="{Binding BalanceText}" />
+                    </TextBlock>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <DataGrid ItemsSource="{Binding Items}" SelectedItem="{Binding SelectedItem}" AutoGenerateColumns="False" CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:DataType="vm:InvoiceItemRow" Header="Item" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn x:DataType="vm:InvoiceItemRow" Header="Price" Width="110"
+                                    Binding="{Binding Price, Converter={x:Static svc:NumberConverter.Instance}}" />
+                <DataGridTextColumn x:DataType="vm:InvoiceItemRow" Header="Qty" Width="80"
+                                    Binding="{Binding Quantity, Converter={x:Static svc:NumberConverter.Instance}}" />
+                <DataGridTextColumn x:DataType="vm:InvoiceItemRow" Header="Amount" Binding="{Binding AmountText}" Width="110" IsReadOnly="True" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

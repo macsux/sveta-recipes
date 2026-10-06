@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             x:Class="SvetaRecipes.App.Views.ScaleView"
+             x:DataType="vm:ScaleViewModel">
+    <DockPanel Margin="20,16">
+        <StackPanel DockPanel.Dock="Top" Spacing="2">
+            <TextBlock Text="{Binding RecipeName}" Classes="title" />
+            <TextBlock Classes="small muted">
+                <Run Text="{Binding OriginalAmount}" /><Run Text="  ·  servings " /><Run Text="{Binding OriginalServings}" />
+                <Run Text="  ·  " /><Run Text="{Binding OriginalPan}" />
+            </TextBlock>
+        </StackPanel>
+
+        <Border DockPanel.Dock="Top" Classes="card" Padding="14,12" Margin="0,12,0,0">
+            <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="14" RowSpacing="8">
+                <RadioButton GroupName="mode" Content="To an amount" IsChecked="{Binding ByAmount}" VerticalAlignment="Center" />
+                <TextBox Grid.Column="1" Width="140" HorizontalAlignment="Left" PlaceholderText="e.g. 1500"
+                         Text="{Binding TargetAmount, Converter={x:Static svc:NumberConverter.Instance}}" IsEnabled="{Binding ByAmount}" />
+
+                <RadioButton Grid.Row="1" GroupName="mode" Content="To servings" IsChecked="{Binding ByServings}" VerticalAlignment="Center" />
+                <TextBox Grid.Row="1" Grid.Column="1" Width="140" HorizontalAlignment="Left" PlaceholderText="e.g. 24"
+                         Text="{Binding TargetServings, Converter={x:Static svc:NumberConverter.Instance}}" IsEnabled="{Binding ByServings}" />
+
+                <RadioButton Grid.Row="2" GroupName="mode" Content="To another pan" IsChecked="{Binding ByPan}" IsEnabled="{Binding CanScaleByPan}" VerticalAlignment="Center"
+                             ToolTip.Tip="Needs the original pan size on the recipe's Pan tab" />
+                <StackPanel Grid.Row="2" Grid.Column="1" Orientation="Horizontal" Spacing="6" IsEnabled="{Binding ByPan}">
+                    <ComboBox ItemsSource="{Binding PanShapes}" SelectedItem="{Binding TargetShape}" Width="170" />
+                    <TextBox Width="64" PlaceholderText="W" IsVisible="{Binding !TargetRound}" Text="{Binding TargetWidth, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Text="×" VerticalAlignment="Center" IsVisible="{Binding !TargetRound}" />
+                    <TextBox Width="64" PlaceholderText="Ø / L" Text="{Binding TargetLength, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Text="×" VerticalAlignment="Center" />
+                    <TextBox Width="64" PlaceholderText="H" Text="{Binding TargetHeight, Converter={x:Static svc:NumberConverter.Instance}}" />
+                    <TextBlock Text="cm" VerticalAlignment="Center" Classes="muted" />
+                </StackPanel>
+
+                <RadioButton Grid.Row="3" GroupName="mode" Content="By a factor" IsChecked="{Binding ByFactor}" VerticalAlignment="Center" />
+                <TextBox Grid.Row="3" Grid.Column="1" Width="140" HorizontalAlignment="Left" PlaceholderText="e.g. 1.5"
+                         Text="{Binding FactorInput, Converter={x:Static svc:NumberConverter.Instance}}" IsEnabled="{Binding ByFactor}" />
+            </Grid>
+        </Border>
+
+        <TextBlock DockPanel.Dock="Top" Text="{Binding Result}" Classes="h2" Margin="2,12,0,8" />
+
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+            <WrapPanel ItemSpacing="16" VerticalAlignment="Center">
+                <CheckBox Content="Notes" IsChecked="{Binding ShowNotes}" />
+                <CheckBox Content="Method" IsChecked="{Binding PrintInstructions}" ToolTip.Tip="Print the method under the ingredients" />
+                <CheckBox Content="Costs" IsChecked="{Binding PrintCosts}" ToolTip.Tip="Print the cost summary" />
+            </WrapPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                <Button Content="Add to shopping list" Command="{Binding AddToShoppingCommand}" />
+                <Button Classes="accent" Content="Print" Command="{Binding PrintCommand}" />
+                <Button Classes="ghost" Content="Close" Command="{Binding DoneCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <DataGrid ItemsSource="{Binding Lines}" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Ingredient" Width="2*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate DataType="vm:PreviewLine">
+                            <TextBlock Text="{Binding Name}" Margin="10,0" VerticalAlignment="Center" xml:space="preserve"
+                                       FontWeight="{Binding IsSubRecipe, Converter={x:Static svc:Converters.BoldIf}}"
+                                       Classes.muted="{Binding IsNested}" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn x:DataType="vm:PreviewLine" Header="Qty" Binding="{Binding Amount}" Width="90" />
+                <DataGridTextColumn x:DataType="vm:PreviewLine" Header="Unit" Binding="{Binding Unit}" Width="64" />
+                <DataGridTextColumn x:DataType="vm:PreviewLine" Header="%" Binding="{Binding Percent}" Width="64" />
+                <DataGridTextColumn x:DataType="vm:PreviewLine" Header="Notes" Binding="{Binding Notes}" Width="2*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    </DockPanel>
+</UserControl>

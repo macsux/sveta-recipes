@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             x:Class="SvetaRecipes.App.Views.QuickCompanyView"
+             x:DataType="vm:QuickCompanyViewModel">
+    <DockPanel Margin="20,16">
+        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="Cancel" Command="{Binding CancelCommand}" IsCancel="True" />
+            <Button Classes="accent" Content="Save" Command="{Binding SaveCommand}" IsDefault="True" />
+        </StackPanel>
+        <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="10" RowSpacing="8">
+            <TextBlock Text="Company" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Column="1" Text="{Binding Name}" />
+            <TextBlock Grid.Row="1" Text="Contact" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Contact}" />
+            <TextBlock Grid.Row="2" Text="Phone" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Phone}" />
+            <TextBlock Grid.Row="3" Text="Email" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Email}" />
+            <TextBlock Grid.Row="4" Text="Street" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Street}" />
+            <TextBlock Grid.Row="5" Text="City" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding City}" />
+            <TextBlock Grid.Row="6" Text="Province" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Province}" />
+            <TextBlock Grid.Row="7" Text="Postal code" Classes="secondary" VerticalAlignment="Center" />
+            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding PostalCode}" />
+            <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Error}" Classes="small danger" />
+        </Grid>
+    </DockPanel>
+</UserControl>

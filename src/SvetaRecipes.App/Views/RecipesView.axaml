@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.RecipesView"
+             x:DataType="vm:RecipesViewModel">
+    <Grid ColumnDefinitions="340,Auto,*">
+        <!-- Recipe list -->
+        <DockPanel Grid.Column="0" Margin="14,12,8,12">
+            <StackPanel DockPanel.Dock="Top" Spacing="8">
+                <TextBox Text="{Binding Search}" PlaceholderText="Search recipes">
+                    <TextBox.InnerLeftContent>
+                        <b:Icon Data="{StaticResource Bolt.Icon.Search}" Size="14" Margin="10,0,0,0" />
+                    </TextBox.InnerLeftContent>
+                </TextBox>
+                <ComboBox ItemsSource="{x:Static vm:RecipesViewModel.SearchScopes}" SelectedItem="{Binding SearchIn}" HorizontalAlignment="Stretch" />
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <ToggleButton Classes="pill" Content="By category" IsChecked="{Binding ByCategory}" />
+                    <ToggleButton Classes="pill" Content="By tag" IsChecked="{Binding ByTag}" />
+                    <ToggleButton Classes="pill" Content="List" IsChecked="{Binding Alphabetical}" />
+                    <ComboBox ItemsSource="{x:Static vm:RecipesViewModel.ListOrders}" SelectedItem="{Binding Order}" IsVisible="{Binding Alphabetical}" Width="140" />
+                </StackPanel>
+                <ComboBox ItemsSource="{x:Static vm:RecipesViewModel.Filters}" SelectedItem="{Binding Filter}" HorizontalAlignment="Stretch" />
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,8,0,0">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{Binding Summary}" Classes="small muted" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="link" Content="{Binding CheckedCount, StringFormat='Clear {0} ticked'}"
+                            Command="{Binding ClearChecksCommand}" IsVisible="{Binding HasChecks}" />
+                </Grid>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="8" RowDefinitions="Auto,Auto" RowSpacing="8">
+                    <Button Grid.ColumnSpan="2" Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Command="{Binding NewCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <b:Icon Data="{StaticResource Bolt.Icon.Plus}" Size="14" />
+                            <TextBlock Text="New recipe" />
+                        </StackPanel>
+                    </Button>
+                    <Button Grid.Row="1" Content="Print labels" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Command="{Binding PrintLabelsCommand}" ToolTip.Tip="Labels for the ticked recipes (or the open one)" />
+                    <Button Grid.Row="1" Grid.Column="1" Content="Shopping list" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            Command="{Binding AddToShoppingCommand}" ToolTip.Tip="Add the ticked recipes (or the open one) to a shopping list" />
+                </Grid>
+            </StackPanel>
+
+            <TreeView x:Name="Tree" ItemsSource="{Binding Nodes}" SelectedItem="{Binding SelectedNode}" Margin="0,10,0,0">
+                <TreeView.Styles>
+                    <Style Selector="TreeViewItem" x:DataType="vm:TreeNode">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                    </Style>
+                </TreeView.Styles>
+                <TreeView.DataTemplates>
+                    <TreeDataTemplate DataType="vm:RecipeGroupNode" ItemsSource="{Binding Children}">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" Classes="h2" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </TreeDataTemplate>
+                    <DataTemplate DataType="vm:RecipeNode">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                            <Border Classes="badge" IsVisible="{Binding LabelPrinted}" VerticalAlignment="Center" Margin="4,0,0,0"
+                                    ToolTip.Tip="Label printed">
+                                <TextBlock Text="label" />
+                            </Border>
+                        </StackPanel>
+                    </DataTemplate>
+                </TreeView.DataTemplates>
+            </TreeView>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" Width="1" />
+
+        <!-- Open recipe -->
+        <Panel Grid.Column="2">
+            <ContentControl Content="{Binding Editor}" />
+            <StackPanel IsVisible="{Binding Editor, Converter={x:Static ObjectConverters.IsNull}}"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+                <TextBlock Text="Pick a recipe on the left" Classes="title" HorizontalAlignment="Center" />
+                <TextBlock Text="or start a new one." Classes="muted" HorizontalAlignment="Center" />
+            </StackPanel>
+        </Panel>
+    </Grid>
+</UserControl>

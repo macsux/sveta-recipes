@@ -1,0 +1,97 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.ShoppingView"
+             x:DataType="vm:ShoppingViewModel">
+    <Grid ColumnDefinitions="260,Auto,*">
+        <!-- lists -->
+        <DockPanel Margin="14,12,8,12">
+            <StackPanel DockPanel.Dock="Bottom" Spacing="8" Margin="0,8,0,0">
+                <Button Classes="accent" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding NewListCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <b:Icon Data="{StaticResource Bolt.Icon.Plus}" Size="14" />
+                        <TextBlock Text="New list" />
+                    </StackPanel>
+                </Button>
+                <Button Classes="ghost" Content="Delete list" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Command="{Binding DeleteListCommand}" />
+            </StackPanel>
+            <TextBlock DockPanel.Dock="Top" Text="SHOPPING LISTS" Classes="caption" Margin="4,4,0,8" />
+            <ListBox ItemsSource="{Binding Lists}" SelectedItem="{Binding SelectedList}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate DataType="vm:ListSummary">
+                        <StackPanel Spacing="1">
+                            <TextBlock Text="{Binding Title}" />
+                            <TextBlock Text="{Binding Detail}" Classes="small muted" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <GridSplitter Grid.Column="1" Width="1" />
+
+        <!-- the open list -->
+        <DockPanel Grid.Column="2" Margin="16,12" IsVisible="{Binding HasList}">
+            <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox Text="{Binding ListName}" PlaceholderText="List name (optional)" Width="260" />
+                    <CalendarDatePicker SelectedDate="{Binding ListDate}" Width="160" />
+                    <CheckBox Content="Group by store" IsChecked="{Binding GroupByStore}" Margin="8,0,0,0" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                    <Button Content="Add several…" Command="{Binding AddSeveralCommand}" ToolTip.Tip="Tick several ingredients at once" />
+                    <Button Content="Add recipes…" Command="{Binding AddRecipesCommand}" />
+                    <Button Content="Print" Command="{Binding PrintCommand}" />
+                    <Button Content="Copy as text" Command="{Binding CopyCommand}" ToolTip.Tip="To paste into a message or notes on the phone" />
+                    <Button Content="Export…" Command="{Binding ExportCommand}" ToolTip.Tip="Save as a spreadsheet (CSV)" />
+                </StackPanel>
+            </Grid>
+
+            <!-- add an item -->
+            <Border DockPanel.Dock="Top" Classes="card" Padding="10,8" Margin="0,0,0,8">
+                <Grid ColumnDefinitions="*,120,200,Auto" ColumnSpacing="8">
+                    <Grid.KeyBindings>
+                        <KeyBinding Gesture="Enter" Command="{Binding AddItemCommand}" />
+                    </Grid.KeyBindings>
+                    <AutoCompleteBox ItemsSource="{Binding IngredientCandidates}" SelectedItem="{Binding NewPick}" Text="{Binding NewText}"
+                                     FilterMode="Contains" MinimumPrefixLength="1" PlaceholderText="Add an item — an ingredient or anything else"
+                                     ValueMemberBinding="{Binding Name, DataType=vm:PickItem}" />
+                    <TextBox Grid.Column="1" Text="{Binding NewQuantity}" PlaceholderText="Qty, e.g. 2 kg" />
+                    <AutoCompleteBox Grid.Column="2" ItemsSource="{Binding Stores}" Text="{Binding NewStore}" FilterMode="Contains"
+                                     MinimumPrefixLength="0" PlaceholderText="Store" />
+                    <Button Grid.Column="3" Classes="accent" Content="Add" Command="{Binding AddItemCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- selection tools -->
+            <Grid DockPanel.Dock="Bottom" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock Text="Selected → store" Classes="secondary" VerticalAlignment="Center" />
+                    <AutoCompleteBox ItemsSource="{Binding Stores}" Text="{Binding BatchStore}" FilterMode="Contains" MinimumPrefixLength="0" Width="180" />
+                    <Button Content="Set" Command="{Binding SetStoreCommand}" CommandParameter="{Binding #Grid.SelectedItems}" />
+                    <Button Classes="ghost" Content="Remove selected" Command="{Binding RemoveItemsCommand}" CommandParameter="{Binding #Grid.SelectedItems}" />
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6">
+                    <Button Content="Merge duplicates" Command="{Binding MergeDuplicatesCommand}" />
+                    <Button Content="Clear bought" Command="{Binding ClearDoneCommand}" />
+                </StackPanel>
+            </Grid>
+
+            <DataGrid x:Name="Grid" ItemsSource="{Binding Items}" AutoGenerateColumns="False" CanUserSortColumns="True"
+                      GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Extended">
+                <DataGrid.Columns>
+                    <DataGridCheckBoxColumn x:DataType="vm:ShoppingItemRow" Header="Bought" Binding="{Binding Done}" Width="96" />
+                    <DataGridTextColumn x:DataType="vm:ShoppingItemRow" Header="Item" Binding="{Binding Name}" Width="2*" SortMemberPath="Name" />
+                    <DataGridTextColumn x:DataType="vm:ShoppingItemRow" Header="Quantity" Binding="{Binding Quantity}" Width="130" />
+                    <DataGridTextColumn x:DataType="vm:ShoppingItemRow" Header="Store" Binding="{Binding Store}" Width="*" SortMemberPath="Store" />
+                    <DataGridTextColumn x:DataType="vm:ShoppingItemRow" Header="Notes" Binding="{Binding Notes}" Width="2*" />
+                </DataGrid.Columns>
+            </DataGrid>
+        </DockPanel>
+        <StackPanel Grid.Column="2" IsVisible="{Binding !HasList}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="6">
+            <TextBlock Text="No list open" Classes="title" HorizontalAlignment="Center" />
+            <TextBlock Text="Start a new list, or add recipes from the Recipes tab." Classes="muted" HorizontalAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</UserControl>

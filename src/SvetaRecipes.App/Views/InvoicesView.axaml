@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SvetaRecipes.App.ViewModels"
+             xmlns:svc="using:SvetaRecipes.App.Services"
+             xmlns:b="using:Bolt.Theme.Controls"
+             x:Class="SvetaRecipes.App.Views.InvoicesView"
+             x:DataType="vm:InvoicesViewModel">
+    <Grid RowDefinitions="Auto,*,Auto" Margin="16,12">
+        <Grid ColumnDefinitions="320,200,*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding Search}" PlaceholderText="Search items, customer or number">
+                <TextBox.InnerLeftContent>
+                    <b:Icon Data="{StaticResource Bolt.Icon.Search}" Size="14" Margin="10,0,0,0" />
+                </TextBox.InnerLeftContent>
+            </TextBox>
+            <ComboBox Grid.Column="1" ItemsSource="{Binding ShowOptions}" SelectedItem="{Binding Show}" HorizontalAlignment="Stretch" />
+            <TextBlock Grid.Column="2" Text="{Binding Summary}" Classes="small muted" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="6">
+                <Button Classes="accent" Command="{Binding NewCommand}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <b:Icon Data="{StaticResource Bolt.Icon.Plus}" Size="14" />
+                        <TextBlock Text="New invoice" />
+                    </StackPanel>
+                </Button>
+                <Button Content="Edit" Command="{Binding EditSelectedCommand}" />
+                <Button Content="Print" Command="{Binding PrintCommand}" />
+                <Button Classes="ghost" Content="Delete" Command="{Binding DeleteCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <DataGrid Grid.Row="1" x:Name="Grid" Margin="0,10,0,0" ItemsSource="{Binding Rows}" SelectedItem="{Binding Selected}"
+                  AutoGenerateColumns="False" CanUserSortColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn x:DataType="vm:InvoiceRow" Header="Invoice" Binding="{Binding Number}" Width="90" IsReadOnly="True" SortMemberPath="Id" />
+                <DataGridTextColumn x:DataType="vm:InvoiceRow" Header="Date" Binding="{Binding DateText}" Width="120" IsReadOnly="True" SortMemberPath="Date" />
+                <DataGridTextColumn x:DataType="vm:InvoiceRow" Header="Customer" Binding="{Binding Customer}" Width="*" IsReadOnly="True" SortMemberPath="Customer" />
+                <DataGridTextColumn x:DataType="vm:InvoiceRow" Header="Items" Binding="{Binding Items}" Width="2*" IsReadOnly="True" />
+                <DataGridTextColumn x:DataType="vm:InvoiceRow" Header="Amount" Binding="{Binding TotalText}" Width="110" IsReadOnly="True" SortMemberPath="Total" />
+                <DataGridTextColumn x:DataType="vm:InvoiceRow" Header="Received" Width="110" SortMemberPath="Received"
+                                    Binding="{Binding Received, Converter={x:Static svc:NumberConverter.Instance}}" />
+                <DataGridCheckBoxColumn x:DataType="vm:InvoiceRow" Header="Paid" Binding="{Binding IsPaid}" Width="70" />
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Border Grid.Row="2" Classes="card" Padding="16,10" Margin="0,10,0,0" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal" Spacing="28">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Total billed" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Billed}" Classes="mono h2" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Received" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Received}" Classes="mono h2" VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Balance" Classes="secondary" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding Balance}" Classes="mono h2 accent" VerticalAlignment="Center" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

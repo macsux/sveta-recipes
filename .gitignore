@@ -1,0 +1,16 @@
+bin/
+obj/
+*.user
+.vs/
+.idea/
+*.db
+*.db-shm
+*.db-wal
+publish/
+Releases/
+.data/
+
+# Real data (her Access files, extracts, screenshots) — never commit
+legacy/
+# Rendered from her real data (customer names, phones, invoices)
+docs/old-vs-new/

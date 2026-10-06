@@ -1,0 +1,29 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SvetaRecipes.App.ViewModels"
+        x:Class="SvetaRecipes.App.Views.MainWindow"
+        x:DataType="vm:MainViewModel"
+        Title="Sveta's Recipes"
+        Width="1360" Height="820" MinWidth="1100" MinHeight="660"
+        WindowStartupLocation="CenterScreen" WindowState="Maximized">
+    <TabControl SelectedIndex="{Binding SelectedTab}" Padding="0">
+        <TabItem Header="Recipes">
+            <ContentControl Content="{Binding Recipes}" />
+        </TabItem>
+        <TabItem Header="Ingredients">
+            <ContentControl Content="{Binding Ingredients}" />
+        </TabItem>
+        <TabItem Header="Shopping lists">
+            <ContentControl Content="{Binding Shopping}" />
+        </TabItem>
+        <TabItem Header="Invoices">
+            <ContentControl Content="{Binding Invoices}" />
+        </TabItem>
+        <TabItem Header="Customers &amp; suppliers">
+            <ContentControl Content="{Binding Companies}" />
+        </TabItem>
+        <TabItem Header="Tools &amp; settings">
+            <ContentControl Content="{Binding Tools}" />
+        </TabItem>
+    </TabControl>
+</Window>
