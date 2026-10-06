@@ -73,7 +73,8 @@ Access screen to the cent, line by line. Keep it green.
 - `RecipeBook` holds the whole DB in memory (a few MB) and writes through: each save opens a short-lived
   `RecipesDbContext`, applies the change to a tracked copy, commits. UI code edits **clones** (`Model/Cloning.cs`)
   and calls `Save*`; never attach the in-memory lists to a context.
-- DB: `%LOCALAPPDATA%\SvetaRecipes\recipes.db` (override with env `SVETA_RECIPES_DB`). First start copies
+- DB: `%APPDATA%\Sveta's Recipes\recipes.db` (override with env `SVETA_RECIPES_DB`). **Never under
+  `%LOCALAPPDATA%\SvetaRecipes`** — that is Velopack's install root and an uninstall deletes it. First start copies
   `seed/recipes.db` from next to the exe if no DB exists — never overwrites.
 - Schema changes: add an EF migration (`cd src/SvetaRecipes.Core && dotnet ef migrations add <Name> -o Data/Migrations`);
   `RecipeBook.Open` migrates on start and snapshots the DB to `pre-upgrade/` first.

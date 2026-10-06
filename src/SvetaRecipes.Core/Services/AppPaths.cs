@@ -5,8 +5,12 @@ public static class AppPaths
     /// <summary>Set to point the app at another database (development, or a copy).</summary>
     public const string DbOverrideVariable = "SVETA_RECIPES_DB";
 
+    /// <summary>
+    /// Her data. Deliberately NOT %LOCALAPPDATA%\SvetaRecipes: that is Velopack's install root, which an uninstall or
+    /// reinstall deletes wholesale. Roaming AppData is never touched by the installer.
+    /// </summary>
     public static string DataFolder =>
-        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SvetaRecipes");
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Sveta's Recipes");
 
     public static string Database =>
         Environment.GetEnvironmentVariable(DbOverrideVariable) is { Length: > 0 } p ? p : Path.Combine(DataFolder, "recipes.db");
