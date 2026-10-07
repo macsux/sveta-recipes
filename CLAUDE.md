@@ -147,7 +147,7 @@ asleep/locked (or from a sandboxed shell) — use the Shots tool, which renders 
   screenshots), `docs/old-vs-new/`, `.data/`, `publish/`, `Releases/` and every `*.db` are git-ignored. Test
   expectations about her data are read from the legacy dump at run time, not hard-coded.
 - Updates: Velopack (`VelopackApp.Build().Run()` first thing in `Main`; `Services/Updates.cs`). The app checks the
-  GitHub releases on start and downloads in the background; then a bar at the top offers "Restart now" (closes the
+  GitHub releases on start and every 30 minutes while running, and downloads in the background; then a bar at the top offers "Restart now" (closes the
   normal way, so unsaved edits are asked about, and relaunches) or "Later" (installed silently on exit). Releases are packed with
   `--delta None` because her install began from the seeded package (deltas against the public one wouldn't apply).
 - Day one: `./release.sh <version> --upload --seed <SRD_data.mdb> <SRD_2018_u.mdb>` → public release on GitHub +

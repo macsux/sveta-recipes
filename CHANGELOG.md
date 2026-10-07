@@ -1,5 +1,9 @@
 # What's new
 
+## 1.3.1 — 2026-10-07
+
+- New versions are noticed while the app is open (it looks every half hour), not only when you start it.
+
 ## 1.3.0 — 2026-10-07
 
 - The assistant no longer adds a recipe unless you ask it to. Paste a recipe or a link and it tells you whether you

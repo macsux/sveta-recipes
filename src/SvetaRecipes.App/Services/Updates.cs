@@ -5,13 +5,17 @@ using Velopack.Sources;
 namespace SvetaRecipes.App.Services;
 
 /// <summary>
-/// Updates come from the GitHub releases of the public repo (they contain no data). An update is downloaded in the
-/// background; the window then offers to restart into it (<see cref="Ready"/>). If she carries on instead, it is applied
-/// silently when the app closes, so the next start is the new version either way.
+/// Updates come from the GitHub releases of the public repo (they contain no data). The app checks on start and then
+/// every <see cref="Interval"/> while it runs; an update is downloaded in the background and the window then offers to
+/// restart into it (<see cref="Ready"/>). If she carries on instead, it is applied silently when the app closes, so the
+/// next start is the new version either way.
 /// </summary>
 public static class Updates
 {
     public const string RepoUrl = "https://github.com/macsux/sveta-recipes";
+
+    /// <summary>How often a running app looks for a new release (GitHub allows 60 anonymous API calls an hour).</summary>
+    public static readonly TimeSpan Interval = TimeSpan.FromMinutes(30);
 
     private static UpdateManager? _manager;
     private static VelopackAsset? _pending;
@@ -27,22 +31,32 @@ public static class Updates
     /// <summary>The running version (from the build; 1.0.0 in a development copy).</summary>
     public static string CurrentVersion => typeof(Updates).Assembly.GetName().Version?.ToString(3) ?? "?";
 
+    /// <summary>Checks now and then every <see cref="Interval"/> for as long as the app runs.</summary>
     public static void CheckInBackground() => Task.Run(async () =>
+    {
+        var mgr = new UpdateManager(new GithubSource(RepoUrl, accessToken: null, prerelease: false));
+        if (!mgr.IsInstalled)
+        {
+            Status = "Updates: not installed with the installer (development copy).";
+            return;
+        }
+        using var timer = new PeriodicTimer(Interval);
+        do await Check(mgr);
+        while (await timer.WaitForNextTickAsync());
+    });
+
+    private static async Task Check(UpdateManager mgr)
     {
         try
         {
-            var mgr = new UpdateManager(new GithubSource(RepoUrl, accessToken: null, prerelease: false));
-            if (!mgr.IsInstalled)
-            {
-                Status = "Updates: not installed with the installer (development copy).";
-                return;
-            }
             var update = await mgr.CheckForUpdatesAsync();
             if (update is null)
             {
-                Status = $"Up to date (version {mgr.CurrentVersion}).";
+                Status = $"Up to date (version {mgr.CurrentVersion}, checked {DateTime.Now:t}).";
                 return;
             }
+            // Already downloaded and waiting; a still newer release replaces it.
+            if (_pending is not null && _pending.Version >= update.TargetFullRelease.Version) return;
             await mgr.DownloadUpdatesAsync(update);
             _manager = mgr;
             _pending = update.TargetFullRelease;
@@ -50,10 +64,10 @@ public static class Updates
         }
         catch (Exception e)
         {
-            // Offline, GitHub unreachable, etc. — try again next start.
+            // Offline, GitHub unreachable, etc. — the next check tries again.
             Status = "Could not check for updates: " + e.Message;
         }
-    });
+    }
 
     /// <summary>Announces a downloaded update (public so the smoke test can show the prompt).</summary>
     public static void MarkReady(string version)
