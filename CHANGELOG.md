@@ -1,7 +1,16 @@
 # What's new
 
-## 1.3.1 — 2026-10-07
+## 1.4.0 — 2026-10-07
 
+- **Point at part of the app** for the assistant: press the pin button (above the send button), then click anything in
+  the window. The assistant gets a picture of it with what you clicked outlined, so you can say "this box" or "this
+  button". Point at several things before sending if you like.
+- **Development mode** (the "Mode" button at the top, next to Assistant): the assistant can change the app itself. Ask
+  for a new button, a different layout or a new report; it makes the change, tests it, and a bar at the top offers
+  **Apply changes**, which restarts the app with it. The first switch sets everything up by itself (a few minutes,
+  nothing to click). Switch back to Release at any time. Where the app's code is kept can be changed under Tools &
+  settings → Assistant.
+- The mode button and the About page show exactly which version you're running.
 - New versions are noticed while the app is open (it looks every half hour), not only when you start it.
 
 ## 1.3.0 — 2026-10-07
