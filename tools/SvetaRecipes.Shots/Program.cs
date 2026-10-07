@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.Input;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SvetaRecipes.App;
@@ -16,6 +17,10 @@ using SvetaRecipes.Reports;
 // Usage: SvetaRecipes.Shots <database to COPY> <output folder> [Light|Dark]
 // The database is copied first; the original is never modified.
 // Or:    SvetaRecipes.Shots compare <database> <legacy screenshots folder> <output folder>   (old → new side by side)
+// Or:    SvetaRecipes.Shots check <database to COPY> <output folder>   (any data: every screen, fails on errors; ScreenCheck.cs)
+if (args[0] == "check") return ScreenCheck.Run(args[1], args[2]);
+// Or:    SvetaRecipes.Shots devmode <database to COPY> <work folder> [--live]   (development mode end to end; DevModeTest.cs)
+if (args[0] == "devmode") return DevModeTest.Run(args[1], args[2], args.Contains("--live"));
 if (args[0] == "compare")
 {
     AppBuilder.Configure<App>().UseSkia().UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false }).SetupWithoutStarting();
@@ -125,6 +130,16 @@ foreach (var (tab, name) in new[] { (1, "04-ingredients"), (3, "09-invoices"), (
 var toolTabs = window.GetVisualDescendants().OfType<TabControl>().First(t => t.Classes.Contains("large"));
 toolTabs.SelectedIndex = toolTabs.ItemCount - 2;
 Shot(window, "07c-assistant-instructions");
+// Development mode's source folder: the dialog (default suggested; a checkout like this repo is used as it is).
+foreach (var (folder, name) in new[] { (DevMode.DefaultSourceDir, "07d-source-folder-default"), (Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../../../..")), "07e-source-folder-existing") })
+{
+    var folderVm = new SourceFolderViewModel(vm.Dialogs, folder, "Where development mode keeps the app's source code.", "Switch to development");
+    var folderWindow = new Window { Width = 620, Height = 340, Content = folderVm, DataContext = folderVm };
+    folderWindow.Show();
+    Shot(folderWindow, name);
+    Check(name.EndsWith("existing") ? folderVm.Note.Contains("used as it is") : folderVm.IsUsable, $"source folder dialog: {folderVm.Note}");
+    folderWindow.Close();
+}
 vm.Tools.AssistantInstructions = "Always answer in French.";
 Check(Assistant.SystemPrompt(book).StartsWith("Always answer in French.") && Assistant.SystemPrompt(book).Contains("RecipeLines(")
       && vm.Tools.IsCustomInstructions, "edited assistant instructions are used, with the schema still appended");
@@ -196,6 +211,52 @@ vm.IsAssistantOpen = true;
 Shot(window, "11-assistant-empty");
 Check(vm.DescribeView().Contains($"recipe {cremeux.Id}"), $"the assistant is told what's open ({vm.DescribeView()})");
 
+// "Point at part of the app": hover outlines the element, the wheel widens it, a click attaches a marked screenshot.
+var servingsLabel = window.GetVisualDescendants().OfType<TextBlock>().First(t => t.Text == "Servings");
+var servingsBox = ((Grid)servingsLabel.GetVisualParent()!).Children.OfType<TextBox>().First(t => Grid.GetRow(t) == 2 && Grid.GetColumn(t) == 1);
+var at = servingsBox.TranslatePoint(new Point(servingsBox.Bounds.Width / 2, servingsBox.Bounds.Height / 2), window)!.Value;
+var picking = window.PickAsync(vm.Assistant.PicksFolder);
+Pump();
+window.MouseMove(at);
+Shot(window, "17-pick-hover");
+var overlay = window.GetVisualDescendants().OfType<PickOverlay>().Single();
+window.MouseWheel(at, new Vector(0, 1));
+Shot(window, "17b-pick-wider");
+window.MouseWheel(at, new Vector(0, -1));
+window.MouseDown(at, MouseButton.Left);
+window.MouseUp(at, MouseButton.Left);
+Pump();
+var picked = picking.IsCompletedSuccessfully ? picking.Result : null;
+Check(picked is not null && File.Exists(picked.ImagePath) && File.Exists(picked.CloseUpPath), "clicking captures a marked screenshot and a close-up");
+Check(picked?.Summary == "TextBox \"Servings\"", $"the picked element is named by its label ({picked?.Summary})");
+Check(picked?.Description.Contains("In view: RecipeEditorView") == true && picked.Description.Contains("Servings"), "the description says which view and field");
+Console.WriteLine(string.Join("\n", (picked?.Description ?? "").Split('\n').Select(l => "      " + l)));
+Check(!window.GetVisualDescendants().OfType<PickOverlay>().Any(), "the overlay goes away after the click");
+if (picked is not null)
+{
+    File.Copy(picked.ImagePath, Path.Combine(outDir, "17c-pick-marked.png"), overwrite: true);
+    File.Copy(picked.CloseUpPath, Path.Combine(outDir, "17d-pick-closeup.png"), overwrite: true);
+}
+if (picked is not null) vm.Assistant.Attach(picked);
+// A second pick: several parts can go with one message.
+var second = window.PickAsync(vm.Assistant.PicksFolder);
+Pump();
+var saveButton = window.GetVisualDescendants().OfType<Button>().First(b => b.Content as string == "Save");
+var saveAt = saveButton.TranslatePoint(new Point(saveButton.Bounds.Width / 2, saveButton.Bounds.Height / 2), window)!.Value;
+window.MouseMove(saveAt);
+window.MouseDown(saveAt, MouseButton.Left);
+window.MouseUp(saveAt, MouseButton.Left);
+Pump();
+if (second.IsCompletedSuccessfully && second.Result is { } secondPick) vm.Assistant.Attach(secondPick);
+Check(vm.Assistant.Attachments.Count == 2 && vm.Assistant.Attachments[1].Area.Summary == "Button \"Save\"",
+    $"a second pick is added, not replacing the first ({string.Join(", ", vm.Assistant.Attachments.Select(a => a.Area.Summary))})");
+Shot(window, "18-pick-attached");
+var cancelled = window.PickAsync(vm.Assistant.PicksFolder);
+Pump();
+window.KeyPress(Key.Escape, RawInputModifiers.None, PhysicalKey.Escape, null);
+Pump();
+Check(cancelled.IsCompletedSuccessfully && cancelled.Result is null, "Esc cancels pointing");
+
 if (args.Contains("--live"))
 {
     // Real conversations through the Claude Code CLI (needs it installed and logged in; costs a little).
@@ -211,6 +272,11 @@ if (args.Contains("--live"))
         Console.WriteLine($"  > {question}\n{string.Join("\n", reply.Split('\n').Select(l => "    " + l))}");
         return reply;
     }
+
+    var pointReply = Ask("What are the two things I'm pointing at? One short sentence each.");
+    Check(pointReply.Contains("servings", StringComparison.OrdinalIgnoreCase) && pointReply.Contains("save", StringComparison.OrdinalIgnoreCase),
+        "live: the assistant sees both parts of the app she pointed at");
+    Shot(window, "12a-assistant-pointed");
 
     var costReply = Ask("What does this recipe cost per serving?");
     Check(costReply.Contains("25.72"), "live: the open recipe's cost per serving comes from get_costing ($25.72)");

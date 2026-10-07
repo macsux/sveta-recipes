@@ -24,18 +24,47 @@
         </Grid>
         <Border DockPanel.Dock="Top" Classes="hairline" />
 
-        <!-- Composer -->
-        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,8,12,12">
-            <TextBox x:Name="Composer" Classes="composer" Text="{Binding Draft}" AcceptsReturn="True" TextWrapping="Wrap"
+        <!-- Composer: the parts of the app she pointed at (if any) above it; point / send on its right -->
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8" Margin="12,8,12,12">
+            <ItemsControl Grid.ColumnSpan="2" ItemsSource="{Binding Attachments}" IsVisible="{Binding HasAttachments}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Spacing="6" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="vm:PickedAttachment">
+                        <Border Classes="card" Padding="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                                <Image Source="{Binding Thumbnail}" MaxHeight="48" MaxWidth="100" Stretch="Uniform" />
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                    <TextBlock Classes="caption" Text="Pointing at" />
+                                    <TextBlock Classes="small" Text="{Binding Area.Summary}" TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                                <Button Grid.Column="2" Classes="icon" VerticalAlignment="Top" ToolTip.Tip="Remove"
+                                        Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).RemoveAttachmentCommand}"
+                                        CommandParameter="{Binding}">
+                                    <b:Icon Data="{StaticResource Bolt.Icon.Close}" Size="12" />
+                                </Button>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBox x:Name="Composer" Grid.Row="1" Classes="composer" Text="{Binding Draft}" AcceptsReturn="True" TextWrapping="Wrap"
                      MaxHeight="200" PlaceholderText="Ask about your recipes" KeyDown="OnComposerKeyDown" />
-            <Button Grid.Column="1" Classes="accent" VerticalAlignment="Bottom" Command="{Binding SendCommand}"
-                    IsVisible="{Binding !IsBusy}" ToolTip.Tip="Send (Enter)">
-                <b:Icon Data="{StaticResource Bolt.Icon.ChevronRight}" Size="14" />
-            </Button>
-            <Button Grid.Column="1" VerticalAlignment="Bottom" Command="{Binding StopCommand}" IsVisible="{Binding IsBusy}"
-                    ToolTip.Tip="Stop">
-                <b:Icon Data="{StaticResource Bolt.Icon.Stop}" Size="14" />
-            </Button>
+            <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6" VerticalAlignment="Bottom">
+                <Button Classes="icon" HorizontalAlignment="Center" Click="PickArea"
+                        ToolTip.Tip="Point at part of the app: click it, and the assistant gets a picture of it with your message (do it again to add more)">
+                    <b:Icon Data="{StaticResource Bolt.Icon.Pin}" Size="14" />
+                </Button>
+                <Button Classes="accent" Command="{Binding SendCommand}" IsVisible="{Binding !IsBusy}" ToolTip.Tip="Send (Enter)">
+                    <b:Icon Data="{StaticResource Bolt.Icon.ChevronRight}" Size="14" />
+                </Button>
+                <Button Command="{Binding StopCommand}" IsVisible="{Binding IsBusy}" ToolTip.Tip="Stop">
+                    <b:Icon Data="{StaticResource Bolt.Icon.Stop}" Size="14" />
+                </Button>
+            </StackPanel>
         </Grid>
 
         <!-- Conversation -->
@@ -56,7 +85,23 @@
                         <ItemsControl.DataTemplates>
                             <DataTemplate DataType="vm:UserChatItem">
                                 <Border Classes="bubble" HorizontalAlignment="Right" Margin="40,0,0,0">
-                                    <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                    <StackPanel Spacing="8">
+                                        <ItemsControl ItemsSource="{Binding Pictures}" IsVisible="{Binding HasPictures}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <WrapPanel ItemSpacing="6" LineSpacing="6" />
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="vm:ChatPicture">
+                                                    <Button Classes="ghost" Padding="0" Click="OpenPicture" ToolTip.Tip="Open the picture">
+                                                        <Image Source="{Binding Image}" MaxHeight="120" MaxWidth="300" Stretch="Uniform" />
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <SelectableTextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                    </StackPanel>
                                 </Border>
                             </DataTemplate>
                             <DataTemplate DataType="vm:AssistantChatItem">
@@ -90,6 +135,9 @@
                                         </StackPanel>
                                     </Border>
                                 </StackPanel>
+                            </DataTemplate>
+                            <DataTemplate DataType="vm:NoteChatItem">
+                                <TextBlock Classes="small muted" Text="{Binding Text}" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" />
                             </DataTemplate>
                             <DataTemplate DataType="vm:ErrorChatItem">
                                 <SelectableTextBlock Classes="error" Text="{Binding Text}" TextWrapping="Wrap" />

@@ -20,6 +20,8 @@ public partial class MainWindow : Window
         base.OnDataContextChanged(e);
         if (DataContext is not MainViewModel vm) return;
         vm.PropertyChanged += OnViewModelChanged;
+        vm.Dev.Restart = RestartInto;
+        ModeToggle.IsChecked = vm.Dev.IsDevMode;
         LayOutAssistant(vm.IsAssistantOpen);
     }
 
@@ -35,6 +37,50 @@ public partial class MainWindow : Window
         if (!open && column.Width.Value > 0) _assistantWidth = column.Width.Value;
         column.MinWidth = open ? 320 : 0;
         column.Width = new GridLength(open ? _assistantWidth : 0);
+    }
+
+    /// <summary>The mode only changes by restarting: the toggle shows the running mode, and a click asks to switch.</summary>
+    private void ToggleMode(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm) return;
+        ModeToggle.IsChecked = vm.Dev.IsDevMode;
+        vm.Dev.ToggleModeCommand.Execute(null);
+    }
+
+    /// <summary>
+    /// Restarts as something else (a development build, or back to the installed app): asks about unsaved edits, stops
+    /// the assistant, hides, runs <paramref name="start"/>; null from it means the other one is up, so this one exits.
+    /// Otherwise the window comes back and the reason is returned (<see cref="DevViewModel.Stayed"/> if she cancelled).
+    /// </summary>
+    private async Task<string?> RestartInto(Func<Task<string?>> start)
+    {
+        if (DataContext is not MainViewModel vm) return DevViewModel.Stayed;
+        if (!await vm.CanClose()) return DevViewModel.Stayed;
+        await vm.Assistant.DisposeAsync();
+        Hide();
+        string? failure;
+        try { failure = await start(); }
+        catch (Exception e) { failure = e.Message; }
+        if (failure is null)
+        {
+            _confirmedClose = true;
+            Close();
+            return null;
+        }
+        Show();
+        Activate();
+        return failure;
+    }
+
+    /// <summary>"Point at something" mode over the whole window (<see cref="PickOverlay"/>); null if she cancels.</summary>
+    public async Task<PickedArea?> PickAsync(string folder)
+    {
+        var overlay = new PickOverlay(this, folder);
+        Grid.SetRowSpan(overlay, Root.RowDefinitions.Count);
+        Grid.SetColumnSpan(overlay, Root.ColumnDefinitions.Count);
+        Root.Children.Add(overlay);
+        try { return await overlay.Result; }
+        finally { Root.Children.Remove(overlay); }
     }
 
     protected override async void OnClosing(WindowClosingEventArgs e)

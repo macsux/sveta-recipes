@@ -56,6 +56,8 @@ public partial class ToolsViewModel : ViewModelBase, ISection
     }
 
     private RecipeBook Book => _main.Book;
+    /// <summary>Development mode's settings (the source folder) on the Assistant page.</summary>
+    public DevViewModel Dev => _main.Dev;
     private IDialogs Dialogs => _main.Dialogs;
 
     public void Activate()
@@ -174,7 +176,7 @@ public partial class ToolsViewModel : ViewModelBase, ISection
 
     public string UpdateStatus => Services.Updates.Status;
 
-    public string Version => "Version " + Services.Updates.CurrentVersion;
+    public string Version => "Version " + Services.Updates.VersionText + (Services.DevMode.RunningBuild is { } b ? $", development build {b}" : "");
 
     /// <summary>CHANGELOG.md (built into the app) without its title: one section per release.</summary>
     public string ReleaseNotes { get; } = LoadReleaseNotes();

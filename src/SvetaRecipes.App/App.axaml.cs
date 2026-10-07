@@ -26,6 +26,12 @@ public partial class App : Application
             var window = new MainWindow();
             window.DataContext = new MainViewModel(book, window);
             desktop.MainWindow = window;
+            // A development build tells whoever started it that it works, once its window has been up a moment.
+            window.Opened += async (_, _) =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(2));
+                DevMode.ConfirmStarted();
+            };
         }
         base.OnFrameworkInitializationCompleted();
     }

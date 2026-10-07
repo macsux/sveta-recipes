@@ -31,12 +31,13 @@
     <PackageReference Include="Avalonia.Controls.ColorPicker" Version="12.1.2" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageReference Include="Velopack" Version="1.2.161" />
+    <!-- The .NET Claude Agent SDK (the assistant panel): andrew's fork of 0xeb/claude-agent-sdk-dotnet, on nuget.org. -->
+    <PackageReference Include="YetAnotherClaudeAgentSdk" Version="1.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SvetaRecipes.Core\SvetaRecipes.Core.csproj" />
     <ProjectReference Include="..\SvetaRecipes.Reports\SvetaRecipes.Reports.csproj" />
-    <ProjectReference Include="$(BoltThemeDir)\Bolt.Theme.csproj" />
-    <ProjectReference Include="$(ClaudeAgentSdkDir)\Claude.AgentSdk.csproj" />
+    <ProjectReference Include="..\Bolt.Theme\Bolt.Theme.csproj" />
   </ItemGroup>
 </Project>

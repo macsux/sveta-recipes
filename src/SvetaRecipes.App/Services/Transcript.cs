@@ -6,7 +6,9 @@ namespace SvetaRecipes.App.Services;
 /// <summary>
 /// One line of a saved conversation. Kinds: <c>user</c> (Text as typed, Context = what was open), <c>assistant</c>,
 /// <c>tool</c> (Id, Tool, Input), <c>result</c> (Id, Text, IsError), <c>error</c>, <c>session</c> (SessionId of the Claude
-/// Code session, for resuming).
+/// Code session, for resuming), <c>note</c> (something the app did, e.g. applied a change; not sent to Claude). A
+/// <c>user</c> entry may carry parts of the app she pointed at: Images (marked screenshots) and Targets (their
+/// descriptions, as sent).
 /// </summary>
 public sealed record TranscriptEntry(
     string Kind,
@@ -17,7 +19,9 @@ public sealed record TranscriptEntry(
     string? Tool = null,
     JsonElement? Input = null,
     bool? IsError = null,
-    string? SessionId = null);
+    string? SessionId = null,
+    string[]? Images = null,
+    string[]? Targets = null);
 
 /// <summary>
 /// Every assistant conversation, kept as JSON lines in <c>assistant/</c> next to the database (one file per chat,

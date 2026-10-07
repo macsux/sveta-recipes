@@ -1,3 +1,4 @@
+using System.Reflection;
 using Avalonia.Threading;
 using Velopack;
 using Velopack.Sources;
@@ -30,6 +31,18 @@ public static class Updates
 
     /// <summary>The running version (from the build; 1.0.0 in a development copy).</summary>
     public static string CurrentVersion => typeof(Updates).Assembly.GetName().Version?.ToString(3) ?? "?";
+
+    /// <summary>
+    /// The git commit this build was made from (short), stamped by the build: dotnet's SourceLink adds it to the
+    /// informational version, and release.sh / development builds pass it explicitly (-p:SourceRevisionId).
+    /// </summary>
+    public static string? Revision =>
+        typeof(Updates).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion is { } v
+        && v.IndexOf('+') is >= 0 and var plus && v.Length > plus + 1
+            ? v[(plus + 1)..Math.Min(v.Length, plus + 8)] : null;
+
+    /// <summary>"1.0.2 (a1b2c3d)".</summary>
+    public static string VersionText => Revision is { } r ? $"{CurrentVersion} ({r})" : CurrentVersion;
 
     /// <summary>Checks now and then every <see cref="Interval"/> for as long as the app runs.</summary>
     public static void CheckInBackground() => Task.Run(async () =>

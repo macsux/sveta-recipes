@@ -1,0 +1,4 @@
+<Project>
+  <!-- Empty on purpose: its presence stops MSBuild looking for a Directory.Build.targets above the repo, which keeps
+       the build self-contained (nothing outside this folder takes part). -->
+</Project>

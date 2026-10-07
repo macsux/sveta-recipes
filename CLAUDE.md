@@ -11,11 +11,12 @@ is in `legacy/ANALYSIS.md`; `docs/old-vs-new/` shows each legacy screen beside i
 ## Layout
 
 ```
+src/Bolt.Theme             the app's theme (forked from andrew's aibolt 2026-10-07; owned here now, not shared)
 src/SvetaRecipes.Core      domain model, EF Core (SQLite), costing/scaling/conversion maths, RecipeBook store, backups
 src/SvetaRecipes.Reports   QuestPDF documents: recipe (scaled, sub-recipes expanded), label sheet, shopping list
 src/SvetaRecipes.App       Avalonia UI (MVVM, CommunityToolkit.Mvvm), one tab per area + the assistant panel
 tools/SvetaRecipes.Import  legacy .mdb → new database (needs mdbtools; Mac only)
-tools/SvetaRecipes.Shots   headless smoke test + screenshots of every screen (no display needed)
+tools/SvetaRecipes.Shots   headless smoke test + screenshots (no display needed); `check` = any-data screen check; `devmode` test
 tests/SvetaRecipes.Core.Tests   engine tests + parity against the legacy data
 CHANGELOG.md               release notes, one section per version (shown in the app under About)
 release.sh                 test → publish → Velopack pack → (--upload) GitHub release, (--seed) private handoff installer
@@ -24,8 +25,8 @@ legacy/                    the Access files as received, extracted CSV/VBA/scree
 
 ## Styling: none in the app — Bolt.Theme only
 
-The UI uses andrew's **Bolt.Theme** (`../aibolt/src/Bolt.Theme`, referenced by path via `BoltThemeDir` in
-`Directory.Build.props`), built so an AI never has to invent styling. Views use only its vocabulary — `Border.card`,
+The UI uses **Bolt.Theme** (`src/Bolt.Theme`, this repo's own copy of the theme from andrew's aibolt; changes are
+made here and not synced back), built so an AI never has to invent styling. Views use only its vocabulary — `Border.card`,
 `TextBlock.caption/title/h2/secondary/muted/small/mono`, `Button.accent/ghost/link/icon`, `ToggleButton.pill`,
 `Border.hairline/vrule/badge/bubble`, `TextBox.composer`, `b:Icon` with `Bolt.Icon.*`, `b:MarkdownBlock`, `b:Spinner` —
 plus layout (margins, grids, spacing).
@@ -87,7 +88,8 @@ Access screen to the cent, line by line. Keep it green.
 ## Assistant panel
 
 A collapsible chat column on the right (toggle top-right; open state in setting `AssistantOpen`). Same integration as
-aibolt: the .NET Claude Agent SDK (`../claude-agent-sdk-dotnet`, `ClaudeAgentSdkDir` in `Directory.Build.props`) runs
+aibolt: the .NET Claude Agent SDK (NuGet `YetAnotherClaudeAgentSdk`, andrew's fork of 0xeb/claude-agent-sdk-dotnet,
+github.com/macsux/claude-agent-sdk-dotnet; namespaces `Claude.AgentSdk`) runs
 the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed and logged in. `Services/Assistant.cs`:
 - Claude Code's own tools are on (web search/fetch, files, shell; `BypassPermissions`, so nothing asks), but no
   settings/CLAUDE.md/skills from the PC (`SettingSources = []`); its working folder is `assistant/` next to the DB.
@@ -111,6 +113,45 @@ the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed a
   what was open, replies, full tool inputs/results, the Claude session id). On start the latest is shown and its
   session resumed (a fresh one if resume fails); "+" starts a new chat. Tool calls show as expandable rows with the
   complete input and result; the wrench toggle in the panel header hides them (setting `AssistantShowTools`).
+- **Point at part of the app** (experimental, unreleased): the pin button above Send puts `Views/PickOverlay`
+  over the window (Snoop-style: hover outlines the element under the mouse, wheel = parent/child, click captures,
+  Esc/right-click cancels). Hit testing is our own geometric walk (respects clipping, skips template parts). The capture
+  is a marked screenshot + close-up (PNG in `assistant/picks/`) and a text description (view, element path, label,
+  bindings via reflection on Avalonia's internal `Description`, DataContext). Several can be attached; each goes with the
+  next message as its description + two image blocks.
+
+## Development mode (experimental, unreleased)
+
+The "Release / Development" pill next to Assistant. Development = the app runs from a build of a local clone of this
+repo and the assistant is also the app's developer. `Services/DevMode.cs` + `ViewModels/DevViewModel.cs`:
+- Source folder: the switch asks for it (default `~/Source/SvetaRecipes`, Browse, or type a path); changeable later
+  under Tools & settings → Assistant (in development mode that rebuilds from the new folder and restarts). Stored as
+  `SourceDir` in `dev-mode.json` (env `SVETA_RECIPES_SOURCE` overrides). An empty folder is cloned into; a folder that
+  already has a checkout of this repo (andrew's Mac: `~/projects/macsux/sveta-recipes`) is used as it is: its branch,
+  its changes, its owner's git identity. A running build finds its source from where it runs (`<source>/.builds/<build>`).
+- Switching on is silent after that dialog: missing git / .NET 10 SDK are installed per-user with no admin and no
+  windows (MinGit zip + `dotnet-install.ps1` into `%LOCALAPPDATA%\SvetaRecipesDev\tools`, put first on PATH by
+  `DevMode.UseInstalledTools` at every start, inherited by builds and Claude Code); clones `Updates.RepoUrl` (env
+  `SVETA_RECIPES_REPO`) at the running commit (else tag `v<version>`) on branch `local`, sets git identity/config if
+  missing, builds, restarts into it. If a step fails, the error goes
+  to the assistant (`ChatViewModel.RunForApp`, shown as a note) to fix silently, then setup is retried once.
+- Versions: every build stamps its commit (`-p:SourceRevisionId`, also in release.sh); `Updates.Revision` /
+  `VersionText` show it (mode pill, About), and each assistant message says the build and commit she's on.
+- Commits: `prepare_changes` snapshots the working tree as a commit with a separate index (`git commit-tree`, message =
+  the summary) without moving the branch, and builds that. Apply changes = `DevMode.CommitApplied` moves `local` to it
+  (git index follows, later edits stay uncommitted), then restarts. The agent is told not to commit itself.
+- Builds: `dotnet publish` to a NEW folder `.builds/<yyyyMMdd-HHmmss>/` each time (the running build is never
+  overwritten, so the agent can `dotnet build`/test freely), then `Shots check` on a copy of her DB. Newest 3 kept.
+- State `dev-mode.json` next to the DB (Enabled, Launcher = the installed exe, Current, LastGood, Tried). The installed
+  app is only a launcher while Enabled (`DevMode.HandOver` first in `Main`); a build confirms itself 2 s after its
+  window opens (`ConfirmStarted`). Apply = close normally (unsaved edits asked) → start new build → exit only once it
+  confirms, else show the window again and tell the assistant why (crash text from `last-crash.txt`). A build that
+  never confirmed is skipped by the launcher for LastGood.
+- Assistant in dev mode: opus, cwd = the clone, `SettingSources = [Project]` (so this CLAUDE.md loads), the generated
+  `Assistant.DevInstructions` (two roles; edit → build → `Shots check` + look at PNGs → commit → `prepare_changes`),
+  and the `prepare_changes` tool (build + check, then the "Apply changes" bar). Its MCP timeout is 30 min.
+- Test end to end (a local snapshot repo, opens real windows briefly; `--live` has Claude make a real change):
+  `dotnet run --project tools/SvetaRecipes.Shots -- devmode .data/recipes.db <work folder> [--live]`
 
 ## UI gotchas (both cost real debugging)
 
@@ -122,6 +163,13 @@ the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed a
   The smoke test checks "opening a recipe does not mark it modified".
 - Grids save on `RowEditEnded` (code-behind) — like the Access datasheet. Check boxes/combos commit immediately.
 
+## Self-contained
+
+Everything builds from this repo plus nuget.org: no project, path or config above the repo root (development mode
+clones it alone onto her PC). `NuGet.Config` clears inherited sources; the empty `Directory.Build.targets` and
+`ImportDirectoryPackagesProps=false` stop MSBuild picking up files from parent folders. Keep it that way: a shared
+library becomes a NuGet package or is copied in, never referenced as `../something`.
+
 ## Running
 
 ```sh
@@ -130,6 +178,7 @@ dotnet run --project tools/SvetaRecipes.Import -- legacy/original/SRD_data.mdb l
 SVETA_RECIPES_DB=$PWD/.data/dev.db dotnet run --project src/SvetaRecipes.App
 dotnet run --project tools/SvetaRecipes.Shots -- .data/recipes.db .data/shots [Light|Dark]   # smoke test + PNGs
 dotnet run --project tools/SvetaRecipes.Shots -- .data/recipes.db .data/shots-live Light --live   # + real assistant chats (CLI, costs a little)
+dotnet run --project tools/SvetaRecipes.Shots -- check <any db> <out>      # every screen on a copy of any data; fails on errors
 ./release.sh 1.0.1 --upload                  # public update on GitHub (no data)
 ./release.sh 1.0.0 --upload --seed <SRD_data.mdb> <SRD_2018_u.mdb>   # + private installer with her data
 ```

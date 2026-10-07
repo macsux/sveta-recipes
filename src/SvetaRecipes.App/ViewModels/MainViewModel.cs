@@ -23,6 +23,8 @@ public partial class MainViewModel : ViewModelBase
     public CompaniesViewModel Companies { get; }
     public ToolsViewModel Tools { get; }
     public ChatViewModel Assistant { get; }
+    /// <summary>Release / Development mode and the build-and-apply bar.</summary>
+    public DevViewModel Dev { get; }
 
     [ObservableProperty] private int _selectedTab;
     [ObservableProperty] private bool _isAssistantOpen;
@@ -40,6 +42,7 @@ public partial class MainViewModel : ViewModelBase
         Invoices = new InvoicesViewModel(this);
         Companies = new CompaniesViewModel(this);
         Tools = new ToolsViewModel(this);
+        Dev = new DevViewModel(this);
         Assistant = new ChatViewModel(this);
         _isAssistantOpen = book.GetSetting(SettingKeys.AssistantOpen) == "1";
         Recipes.Activate();
@@ -65,7 +68,8 @@ public partial class MainViewModel : ViewModelBase
     {
         string[] tabs = ["Recipes", "Ingredients", "Shopping lists", "Invoices", "Customers & suppliers", "Tools & settings"];
         var tab = tabs[Math.Clamp(SelectedTab, 0, tabs.Length - 1)] + " tab";
-        return SelectedTab == 0 && Recipes.Editor is { Id: > 0 } e ? $"{tab}, recipe {e.Id} \"{e.Name}\"{(e.IsDirty ? " (unsaved edits)" : "")}" : tab;
+        var view = SelectedTab == 0 && Recipes.Editor is { Id: > 0 } e ? $"{tab}, recipe {e.Id} \"{e.Name}\"{(e.IsDirty ? " (unsaved edits)" : "")}" : tab;
+        return Dev.Describe() is { } dev ? $"{view}; {dev}" : view;
     }
 
     private ISection Section(int index) => index switch

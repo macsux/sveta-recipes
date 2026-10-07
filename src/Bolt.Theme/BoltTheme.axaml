@@ -1,0 +1,50 @@
+<!--
+  Bolt: a dark-first Avalonia theme. Drop-in replacement for <FluentTheme /> in App.axaml:
+
+      xmlns:bolt="using:Bolt.Theme"
+      <Application.Styles>
+          <bolt:BoltTheme Accent="#7C9BF7" />
+      </Application.Styles>
+
+  It hosts FluentTheme (for the controls Bolt does not re-template), overrides the rest, and exposes design tokens
+  (Tokens.axaml), icons (Icons.axaml) and the Geist / Geist Mono fonts as DynamicResources.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Bolt.Theme.BoltTheme">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://Bolt.Theme/Tokens.axaml" />
+                <ResourceInclude Source="avares://Bolt.Theme/Icons.axaml" />
+                <ResourceInclude Source="avares://Bolt.Theme/ControlThemes.axaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <!-- Fluent defaults that every Fluent-templated control reads -->
+            <StaticResource x:Key="ContentControlThemeFontFamily" ResourceKey="Bolt.Font.Sans" />
+            <x:Double x:Key="ControlContentThemeFontSize">13</x:Double>
+            <CornerRadius x:Key="ControlCornerRadius">7</CornerRadius>
+            <CornerRadius x:Key="OverlayCornerRadius">8</CornerRadius>
+            <x:Double x:Key="TextControlPlaceholderOpacity">1</x:Double>
+        </ResourceDictionary>
+    </Styles.Resources>
+
+    <FluentTheme>
+        <FluentTheme.Palettes>
+            <ColorPaletteResources x:Key="Dark"
+                                   RegionColor="#0F1012" AltHigh="#0F1012" AltMediumHigh="#131417" AltMedium="#15161A" AltLow="#17181B" AltMediumLow="#191A1E"
+                                   BaseHigh="#E6E7EA" BaseMediumHigh="#B8BAC0" BaseMedium="#8B8D94" BaseMediumLow="#5E6168" BaseLow="#2A2C31"
+                                   ChromeAltLow="#B8BAC0" ChromeBlackHigh="#000000" ChromeBlackMedium="#000000" ChromeBlackMediumLow="#000000" ChromeBlackLow="#000000"
+                                   ChromeHigh="#2A2C31" ChromeMedium="#1C1E22" ChromeMediumLow="#17181B" ChromeLow="#131417" ChromeGray="#6E7179"
+                                   ChromeDisabledHigh="#2A2C31" ChromeDisabledLow="#5E6168" ChromeWhite="#F2F3F5"
+                                   ListLow="#191A1E" ListMedium="#1E2025" ErrorText="#EE7F74" />
+            <ColorPaletteResources x:Key="Light"
+                                   RegionColor="#FFFFFF" AltHigh="#FFFFFF" AltMediumHigh="#F6F6F7" AltMedium="#F7F7F8" AltLow="#FFFFFF" AltMediumLow="#EFEFF1"
+                                   BaseHigh="#1B1C1F" BaseMediumHigh="#3F4147" BaseMedium="#6B6E75" BaseMediumLow="#9EA1A7" BaseLow="#E2E3E7"
+                                   ChromeAltLow="#3F4147" ChromeHigh="#D6D7DB" ChromeMedium="#EDEDF0" ChromeMediumLow="#F3F3F5" ChromeLow="#F6F6F7" ChromeGray="#8A8D94"
+                                   ChromeDisabledHigh="#E2E3E7" ChromeDisabledLow="#9EA1A7" ChromeWhite="#FFFFFF"
+                                   ListLow="#EFEFF1" ListMedium="#E9EAEE" ErrorText="#D2473B" />
+        </FluentTheme.Palettes>
+    </FluentTheme>
+
+    <StyleInclude Source="avares://Bolt.Theme/Styles.axaml" />
+</Styles>

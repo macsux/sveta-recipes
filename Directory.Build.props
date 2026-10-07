@@ -1,13 +1,12 @@
 <Project>
+  <!-- The build is self-contained: everything comes from this repo or nuget.org (see NuGet.Config and the empty
+       Directory.Build.targets, which stop MSBuild searching folders above the repo). -->
   <PropertyGroup>
+    <ImportDirectoryPackagesProps>false</ImportDirectoryPackagesProps>
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <!-- Bolt.Theme lives in the aibolt repo; override with -p:BoltThemeDir=... if it moves. -->
-    <BoltThemeDir Condition="'$(BoltThemeDir)' == ''">$(MSBuildThisFileDirectory)..\aibolt\src\Bolt.Theme</BoltThemeDir>
-    <!-- The .NET Claude Agent SDK (the assistant panel), from its sibling checkout, as aibolt uses it. -->
-    <ClaudeAgentSdkDir Condition="'$(ClaudeAgentSdkDir)' == ''">$(MSBuildThisFileDirectory)..\claude-agent-sdk-dotnet\src\Claude.AgentSdk</ClaudeAgentSdkDir>
   </PropertyGroup>
 </Project>

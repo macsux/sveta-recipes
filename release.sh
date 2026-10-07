@@ -10,7 +10,7 @@
 #             This one contains customer data — hand it over privately; never upload or commit it.
 #
 # Needs: .NET 10 SDK, vpk (dotnet tool install -g vpk), gh (logged in) for --upload, mdbtools for --seed,
-#        Bolt.Theme at ../aibolt/src/Bolt.Theme, the Claude Agent SDK at ../claude-agent-sdk-dotnet.
+#        Nothing outside this repo: development mode on her PC builds the release tag from a plain clone.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -49,7 +49,7 @@ dotnet test --project tests/SvetaRecipes.Core.Tests
 
 rm -rf publish/win-x64
 dotnet publish src/SvetaRecipes.App -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true \
-  -p:Version="$version" -o publish/win-x64
+  -p:Version="$version" -p:SourceRevisionId="$(git rev-parse HEAD)" -o publish/win-x64
 
 "$vpk" "[win]" pack "${pack[@]}" --packDir publish/win-x64 --outputDir Releases
 echo "public release: Releases/"

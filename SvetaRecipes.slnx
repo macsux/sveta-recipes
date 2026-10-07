@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/Bolt.Theme/Bolt.Theme.csproj" />
     <Project Path="src/SvetaRecipes.App/SvetaRecipes.App.csproj" />
     <Project Path="src/SvetaRecipes.Core/SvetaRecipes.Core.csproj" />
     <Project Path="src/SvetaRecipes.Reports/SvetaRecipes.Reports.csproj" />
@@ -11,5 +12,4 @@
     <Project Path="tools/SvetaRecipes.Import/SvetaRecipes.Import.csproj" />
     <Project Path="tools/SvetaRecipes.Shots/SvetaRecipes.Shots.csproj" />
   </Folder>
-  <Project Path="../aibolt/src/Bolt.Theme/Bolt.Theme.csproj" />
 </Solution>

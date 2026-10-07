@@ -1,0 +1,379 @@
+<!--
+  Bolt restyling of Fluent-templated controls, plus utility classes.
+
+  Utility classes
+    TextBlock   .title .h1 .h2 .caption (uppercase section label) .small .tiny .mono
+                .strong .secondary .tertiary .muted .subtle .faint .fainter .ghost .accent .success .danger .error
+    Border      .card (surface + hairline) .badge (mono tag) .hairline (1px separator) .vrule (vertical separator)
+                .dot (6px status dot; set Background) .bubble (chat message bubble)
+    TextBox     .composer (multi-line chat input with accent focus ring)
+    ComboBox    .compact (30px toolbar height)
+    ListBox     .rows (transparent list of rounded rows)
+
+  Controls/MarkdownBlock parts are styled at the end.
+-->
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:Bolt.Theme.Controls">
+
+    <!-- ================================================================== Top level -->
+    <Style Selector="Window">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Window}" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Bolt.Font.Sans}" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+    </Style>
+    <Style Selector="SelectableTextBlock">
+        <Setter Property="SelectionBrush" Value="{DynamicResource Bolt.Accent.Selection}" />
+    </Style>
+
+    <!-- ================================================================== Typography -->
+    <Style Selector="TextBlock.title, SelectableTextBlock.title">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Title}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="-0.15" />
+    </Style>
+    <Style Selector="TextBlock.h1">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Title}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.caption">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Caption}" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="LetterSpacing" Value="0.66" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Faint}" />
+    </Style>
+    <Style Selector="TextBlock.small, SelectableTextBlock.small">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Small}" />
+    </Style>
+    <Style Selector="TextBlock.tiny">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Caption}" />
+    </Style>
+    <Style Selector="TextBlock.mono, SelectableTextBlock.mono">
+        <Setter Property="FontFamily" Value="{DynamicResource Bolt.Font.Mono}" />
+    </Style>
+    <Style Selector="TextBox.mono">
+        <Setter Property="FontFamily" Value="{DynamicResource Bolt.Font.Mono}" />
+    </Style>
+    <Style Selector="TextBlock.strong"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Strong}" /></Style>
+    <Style Selector="TextBlock.secondary"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Secondary}" /></Style>
+    <Style Selector="TextBlock.tertiary"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Tertiary}" /></Style>
+    <Style Selector="TextBlock.muted, SelectableTextBlock.muted"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Muted}" /></Style>
+    <Style Selector="TextBlock.subtle, SelectableTextBlock.subtle"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Subtle}" /></Style>
+    <Style Selector="TextBlock.faint"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Faint}" /></Style>
+    <Style Selector="TextBlock.fainter"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Fainter}" /></Style>
+    <Style Selector="TextBlock.ghost"><Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Ghost}" /></Style>
+    <Style Selector="TextBlock.accent"><Setter Property="Foreground" Value="{DynamicResource Bolt.Accent.Text}" /></Style>
+    <Style Selector="TextBlock.success"><Setter Property="Foreground" Value="{DynamicResource Bolt.Success}" /></Style>
+    <Style Selector="TextBlock.danger, TextBlock.error, SelectableTextBlock.error"><Setter Property="Foreground" Value="{DynamicResource Bolt.Danger}" /></Style>
+
+    <!-- ================================================================== Containers -->
+    <Style Selector="Border.card">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Subtle}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Card}" />
+    </Style>
+    <Style Selector="Border.badge">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Badge}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Tag}" />
+        <Setter Property="Padding" Value="6,1" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.badge > TextBlock">
+        <Setter Property="FontFamily" Value="{DynamicResource Bolt.Font.Mono}" />
+        <Setter Property="FontSize" Value="10.5" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Tertiary}" />
+    </Style>
+    <Style Selector="Border.hairline">
+        <Setter Property="Height" Value="1" />
+        <Setter Property="Background" Value="{DynamicResource Bolt.Border.Subtle}" />
+    </Style>
+    <Style Selector="Border.vrule">
+        <Setter Property="Width" Value="1" />
+        <Setter Property="Height" Value="18" />
+        <Setter Property="Background" Value="{DynamicResource Bolt.Border.Control}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <!-- Size only: set the color on the element (a style Background would win over a local value in data templates) -->
+    <Style Selector="Border.dot">
+        <Setter Property="Width" Value="6" />
+        <Setter Property="Height" Value="6" />
+        <Setter Property="CornerRadius" Value="3" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="GridSplitter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="MinWidth" Value="1" />
+        <Setter Property="MinHeight" Value="1" />
+    </Style>
+
+    <!-- ================================================================== Tabs -->
+    <Style Selector="TabControl.large > TabItem">
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Reading}" />
+    </Style>
+
+    <!-- ================================================================== TextBox -->
+    <Style Selector="TextBox">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource Bolt.Fg.Primary}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource Bolt.Accent.Selection}" />
+        <Setter Property="SelectionForegroundBrush" Value="{DynamicResource Bolt.Fg.Strong}" />
+        <Setter Property="PlaceholderForeground" Value="{DynamicResource Bolt.Fg.Fainter}" />
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Field}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Control}" />
+        <Setter Property="MinHeight" Value="{DynamicResource Bolt.FieldHeight}" />
+        <Setter Property="Padding" Value="12,6" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBox /template/ TextBlock#PART_Placeholder">
+        <Setter Property="Opacity" Value="1" />
+    </Style>
+    <!-- Fluent template-binds AutoCompleteBox's inner TextBox to TextControlBackground (a grey fill); match TextBox. -->
+    <Style Selector="AutoCompleteBox">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Field}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+    </Style>
+    <Style Selector="TextBox /template/ Border#PART_BorderElement">
+        <Setter Property="Background" Value="{Binding $parent[TextBox].Background}" />
+        <Setter Property="BorderBrush" Value="{Binding $parent[TextBox].BorderBrush}" />
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Hover}" />
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Accent.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BoxShadow" Value="{DynamicResource Bolt.Shadow.FocusRing}" />
+    </Style>
+    <Style Selector="TextBox:pointerover, TextBox:focus">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+    </Style>
+    <Style Selector="TextBox:disabled">
+        <Setter Property="Opacity" Value="0.55" />
+    </Style>
+    <Style Selector="TextBox.composer">
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="MinHeight" Value="76" />
+        <Setter Property="MaxHeight" Value="260" />
+        <Setter Property="Padding" Value="14,12" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Reading}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Panel}" />
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Surface}" />
+        <Setter Property="VerticalContentAlignment" Value="Top" />
+    </Style>
+    <Style Selector="TextBox.composer /template/ TextBlock#PART_Placeholder">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Fainter}" />
+    </Style>
+
+    <!-- ================================================================== NumericUpDown shares the field look -->
+    <Style Selector="NumericUpDown">
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Control}" />
+        <Setter Property="MinHeight" Value="{DynamicResource Bolt.FieldHeight}" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+    </Style>
+
+    <!-- ================================================================== ComboBox (Fluent template, Bolt skin) -->
+    <Style Selector="ComboBox">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Input}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Control}" />
+        <Setter Property="MinHeight" Value="{DynamicResource Bolt.FieldHeight}" />
+        <Setter Property="Padding" Value="12,0,14,0" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+        <Setter Property="PlaceholderForeground" Value="{DynamicResource Bolt.Fg.Fainter}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox.compact">
+        <Setter Property="MinHeight" Value="{DynamicResource Bolt.ControlHeight}" />
+        <Setter Property="Padding" Value="12,0,10,0" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Control}" />
+        <Setter Property="FontWeight" Value="Medium" />
+    </Style>
+    <Style Selector="ComboBox /template/ Border#Background">
+        <Setter Property="Background" Value="{Binding $parent[ComboBox].Background}" />
+        <Setter Property="BorderBrush" Value="{Binding $parent[ComboBox].BorderBrush}" />
+        <Setter Property="MinWidth" Value="0" />
+    </Style>
+    <Style Selector="ComboBox:pointerover /template/ Border#Background">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Hover}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Hover}" />
+    </Style>
+    <Style Selector="ComboBox:dropdownopen /template/ Border#Background">
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Accent.Border}" />
+    </Style>
+    <Style Selector="ComboBox:focus-visible /template/ Border#HighlightBackground">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Accent.Border}" />
+    </Style>
+    <Style Selector="ComboBox /template/ ContentControl#ContentPresenter, ComboBox:focus-visible /template/ ContentControl#ContentPresenter">
+        <Setter Property="Foreground" Value="{Binding $parent[ComboBox].Foreground}" />
+    </Style>
+    <!-- The template sets the glyph's 12×12 box locally; scale it down to the 7×4 chevron of a 12px line icon -->
+    <Style Selector="ComboBox /template/ PathIcon#DropDownGlyph">
+        <Setter Property="Data" Value="{DynamicResource Bolt.Glyph.ChevronDown.Solid}" />
+        <Setter Property="RenderTransform" Value="scale(0.6)" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Muted}" />
+    </Style>
+    <Style Selector="ComboBox /template/ Border#PopupBorder">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Overlay}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Card}" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+    <Style Selector="ComboBoxItem">
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Row}" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+    </Style>
+    <Style Selector="ComboBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+    </Style>
+    <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Raised}" />
+    </Style>
+    <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Selected}" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Strong}" />
+    </Style>
+
+    <!-- ================================================================== ListBox -->
+    <Style Selector="ListBox">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+    </Style>
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="10,7" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Row}" />
+        <Setter Property="MinHeight" Value="0" />
+    </Style>
+    <Style Selector="ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+    </Style>
+    <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Hover}" />
+    </Style>
+    <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter, ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Subtle}" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Strong}" />
+    </Style>
+
+    <!-- ================================================================== Menus, flyouts, tooltips -->
+    <Style Selector="MenuFlyoutPresenter, ContextMenu">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Overlay}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Card}" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="FontFamily" Value="{DynamicResource Bolt.Font.Sans}" />
+    </Style>
+    <Style Selector="MenuItem">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Body}" />
+        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Row}" />
+    </Style>
+    <Style Selector="MenuItem /template/ Border#PART_LayoutRoot">
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Row}" />
+    </Style>
+    <Style Selector="MenuItem:pointerover /template/ Border#PART_LayoutRoot, MenuItem:selected /template/ Border#PART_LayoutRoot">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Raised}" />
+    </Style>
+    <Style Selector="MenuItem:disabled">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Ghost}" />
+    </Style>
+    <Style Selector="MenuFlyoutPresenter Separator, ContextMenu Separator, Menu Separator">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Border.Subtle}" />
+        <Setter Property="Margin" Value="6,4" />
+    </Style>
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Raised}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Primary}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Row}" />
+        <Setter Property="Padding" Value="8,5" />
+        <Setter Property="FontSize" Value="{DynamicResource Bolt.FontSize.Small}" />
+        <Setter Property="FontFamily" Value="{DynamicResource Bolt.Font.Sans}" />
+    </Style>
+    <Style Selector="FlyoutPresenter">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Overlay}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Card}" />
+    </Style>
+    <!-- ================================================================== Chat bubble -->
+    <Style Selector="Border.bubble">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bubble.Bg}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Bubble.Border}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Bubble}" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+    <!-- ================================================================== MarkdownBlock parts -->
+    <Style Selector="c|MarkdownBlock Border.code">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Subtle}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Card}" />
+        <Setter Property="Padding" Value="14,10" />
+        <Setter Property="Margin" Value="0,2" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Border.code SelectableTextBlock">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Secondary}" />
+    </Style>
+    <Style Selector="c|MarkdownBlock TextBlock.bullet">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Fg.Fainter}" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Border.quote">
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Default}" />
+        <Setter Property="BorderThickness" Value="2,0,0,0" />
+        <Setter Property="Padding" Value="12,2" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Border.rule">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Border.Subtle}" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Border.tableframe">
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Subtle}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="{DynamicResource Bolt.Radius.Card}" />
+        <Setter Property="Margin" Value="0,3" />
+        <Setter Property="ClipToBounds" Value="True" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Border.tableheader">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Surface}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Subtle}" />
+        <Setter Property="Padding" Value="10,6" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Border.tablecell">
+        <Setter Property="BorderBrush" Value="{DynamicResource Bolt.Border.Subtle}" />
+        <Setter Property="Padding" Value="10,6" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Run.inlinecode">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.Code}" />
+    </Style>
+    <Style Selector="c|MarkdownBlock.onbubble Run.inlinecode">
+        <Setter Property="Background" Value="{DynamicResource Bolt.Bg.CodeInline}" />
+    </Style>
+    <Style Selector="c|MarkdownBlock Run.link">
+        <Setter Property="Foreground" Value="{DynamicResource Bolt.Accent}" />
+    </Style>
+</Styles>

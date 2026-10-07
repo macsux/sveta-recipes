@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using SvetaRecipes.App.Services;
 using SvetaRecipes.App.ViewModels;
 
 namespace SvetaRecipes.App.Views;
@@ -27,6 +28,19 @@ public partial class ChatView : UserControl
         e.Handled = true;
         _stickToBottom = true;
         if (vm.SendCommand.CanExecute(null)) vm.SendCommand.Execute(null);
+    }
+
+    /// <summary>The window goes into "point at something" mode; what she clicks is attached to the next message.</summary>
+    private async void PickArea(object? sender, RoutedEventArgs e)
+    {
+        if (TopLevel.GetTopLevel(this) is not MainWindow window || DataContext is not ChatViewModel vm) return;
+        if (await window.PickAsync(vm.PicksFolder) is { } picked) vm.Attach(picked);
+        Composer.Focus();
+    }
+
+    private void OpenPicture(object? sender, RoutedEventArgs e)
+    {
+        if ((sender as Control)?.DataContext is ChatPicture { Path: var path } && File.Exists(path)) Launcher.Open(path);
     }
 
     private void Close(object? sender, RoutedEventArgs e)

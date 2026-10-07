@@ -1,0 +1,150 @@
+<!--
+  Bolt design tokens. Everything visual in the theme (and in apps using it) should reference these keys rather than
+  literal colors, so a palette change is a one-file edit. Accent-derived brushes (Bolt.Accent*, Bolt.Bubble*) are
+  computed in BoltTheme.cs from BoltTheme.Accent and are not listed here.
+-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Dark">
+            <!-- Surfaces, darkest to lightest -->
+            <SolidColorBrush x:Key="Bolt.Bg.StatusBar" Color="#0C0D0F" />
+            <SolidColorBrush x:Key="Bolt.Bg.Window" Color="#0F1012" />
+            <SolidColorBrush x:Key="Bolt.Bg.Panel" Color="#121316" />
+            <SolidColorBrush x:Key="Bolt.Bg.Chrome" Color="#131417" />
+            <SolidColorBrush x:Key="Bolt.Bg.Field" Color="#131417" />
+            <SolidColorBrush x:Key="Bolt.Bg.Surface" Color="#15161A" />
+            <SolidColorBrush x:Key="Bolt.Bg.Input" Color="#17181B" />
+            <SolidColorBrush x:Key="Bolt.Bg.Subtle" Color="#17181C" />
+            <SolidColorBrush x:Key="Bolt.Bg.Hover" Color="#191A1E" />
+            <SolidColorBrush x:Key="Bolt.Bg.Raised" Color="#1C1E22" />
+            <SolidColorBrush x:Key="Bolt.Bg.Code" Color="#1C1E23" />
+            <SolidColorBrush x:Key="Bolt.Bg.Selected" Color="#1E2025" />
+            <SolidColorBrush x:Key="Bolt.Bg.Tag" Color="#202227" />
+            <SolidColorBrush x:Key="Bolt.Bg.Track" Color="#222429" />
+            <SolidColorBrush x:Key="Bolt.Bg.RaisedHover" Color="#24262B" />
+            <SolidColorBrush x:Key="Bolt.Bg.Badge" Color="#26282D" />
+            <SolidColorBrush x:Key="Bolt.Bg.BadgeStrong" Color="#2A2C31" />
+            <SolidColorBrush x:Key="Bolt.Bg.CodeInline" Color="#12FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Bg.Overlay" Color="#18191D" />
+
+            <!-- Hairlines (white at low alpha, so they read on every surface) -->
+            <SolidColorBrush x:Key="Bolt.Border.Faint" Color="#0DFFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Border.Subtle" Color="#0FFFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Border.Pill" Color="#12FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Border.Control" Color="#14FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Border.Default" Color="#17FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Border.Hover" Color="#1FFFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Border.Strong" Color="#33FFFFFF" />
+
+            <!-- Text, most to least prominent -->
+            <SolidColorBrush x:Key="Bolt.Fg.Strong" Color="#F2F3F5" />
+            <SolidColorBrush x:Key="Bolt.Fg.Primary" Color="#E6E7EA" />
+            <SolidColorBrush x:Key="Bolt.Fg.Body" Color="#DADCE0" />
+            <SolidColorBrush x:Key="Bolt.Fg.Row" Color="#D9DBDF" />
+            <SolidColorBrush x:Key="Bolt.Fg.Code" Color="#CFD1D6" />
+            <SolidColorBrush x:Key="Bolt.Fg.Hover" Color="#C9CBD0" />
+            <SolidColorBrush x:Key="Bolt.Fg.Secondary" Color="#B8BAC0" />
+            <SolidColorBrush x:Key="Bolt.Fg.Pill" Color="#A6A8AE" />
+            <SolidColorBrush x:Key="Bolt.Fg.Tertiary" Color="#9A9CA3" />
+            <SolidColorBrush x:Key="Bolt.Fg.Muted" Color="#8B8D94" />
+            <SolidColorBrush x:Key="Bolt.Fg.Subtle" Color="#7C7F87" />
+            <SolidColorBrush x:Key="Bolt.Fg.Faint" Color="#6E7179" />
+            <SolidColorBrush x:Key="Bolt.Fg.Fainter" Color="#5E6168" />
+            <SolidColorBrush x:Key="Bolt.Fg.Ghost" Color="#4E5157" />
+            <SolidColorBrush x:Key="Bolt.Fg.Dot" Color="#4A4D54" />
+            <SolidColorBrush x:Key="Bolt.Fg.Hint" Color="#484A50" />
+            <SolidColorBrush x:Key="Bolt.Fg.OnAccent" Color="#0F1012" />
+
+            <!-- Status -->
+            <SolidColorBrush x:Key="Bolt.Success" Color="#5FC495" />
+            <!-- Categorical chart hues (validated: CVD / contrast on this surface), in fixed order -->
+            <SolidColorBrush x:Key="Bolt.Chart.1" Color="#3987E5" />
+            <SolidColorBrush x:Key="Bolt.Chart.2" Color="#D95926" />
+            <SolidColorBrush x:Key="Bolt.Danger" Color="#EE7F74" />
+            <SolidColorBrush x:Key="Bolt.Warning" Color="#E9A36B" />
+            <SolidColorBrush x:Key="Bolt.Success.Bg" Color="#1A5FC495" />
+            <SolidColorBrush x:Key="Bolt.Danger.Bg" Color="#1AEE7F74" />
+            <SolidColorBrush x:Key="Bolt.Warning.Bg" Color="#1AE9A36B" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="Bolt.Bg.StatusBar" Color="#F1F1F3" />
+            <SolidColorBrush x:Key="Bolt.Bg.Window" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Bg.Panel" Color="#FAFAFB" />
+            <SolidColorBrush x:Key="Bolt.Bg.Chrome" Color="#F6F6F7" />
+            <SolidColorBrush x:Key="Bolt.Bg.Field" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Bg.Surface" Color="#F7F7F8" />
+            <SolidColorBrush x:Key="Bolt.Bg.Input" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="Bolt.Bg.Subtle" Color="#F1F1F3" />
+            <SolidColorBrush x:Key="Bolt.Bg.Hover" Color="#EFEFF1" />
+            <SolidColorBrush x:Key="Bolt.Bg.Raised" Color="#F3F3F5" />
+            <SolidColorBrush x:Key="Bolt.Bg.Code" Color="#F1F1F3" />
+            <SolidColorBrush x:Key="Bolt.Bg.Selected" Color="#E9EAEE" />
+            <SolidColorBrush x:Key="Bolt.Bg.Tag" Color="#ECECEF" />
+            <SolidColorBrush x:Key="Bolt.Bg.Track" Color="#E3E4E8" />
+            <SolidColorBrush x:Key="Bolt.Bg.RaisedHover" Color="#E9E9EC" />
+            <SolidColorBrush x:Key="Bolt.Bg.Badge" Color="#E8E9EC" />
+            <SolidColorBrush x:Key="Bolt.Bg.BadgeStrong" Color="#E2E3E7" />
+            <SolidColorBrush x:Key="Bolt.Bg.CodeInline" Color="#0F000000" />
+            <SolidColorBrush x:Key="Bolt.Bg.Overlay" Color="#FFFFFF" />
+
+            <SolidColorBrush x:Key="Bolt.Border.Faint" Color="#0D000000" />
+            <SolidColorBrush x:Key="Bolt.Border.Subtle" Color="#12000000" />
+            <SolidColorBrush x:Key="Bolt.Border.Pill" Color="#17000000" />
+            <SolidColorBrush x:Key="Bolt.Border.Control" Color="#17000000" />
+            <SolidColorBrush x:Key="Bolt.Border.Default" Color="#1F000000" />
+            <SolidColorBrush x:Key="Bolt.Border.Hover" Color="#2E000000" />
+            <SolidColorBrush x:Key="Bolt.Border.Strong" Color="#40000000" />
+
+            <SolidColorBrush x:Key="Bolt.Fg.Strong" Color="#0F1012" />
+            <SolidColorBrush x:Key="Bolt.Fg.Primary" Color="#1B1C1F" />
+            <SolidColorBrush x:Key="Bolt.Fg.Body" Color="#26282C" />
+            <SolidColorBrush x:Key="Bolt.Fg.Row" Color="#26282C" />
+            <SolidColorBrush x:Key="Bolt.Fg.Code" Color="#2E3035" />
+            <SolidColorBrush x:Key="Bolt.Fg.Hover" Color="#303237" />
+            <SolidColorBrush x:Key="Bolt.Fg.Secondary" Color="#3F4147" />
+            <SolidColorBrush x:Key="Bolt.Fg.Pill" Color="#4B4E54" />
+            <SolidColorBrush x:Key="Bolt.Fg.Tertiary" Color="#5A5D64" />
+            <SolidColorBrush x:Key="Bolt.Fg.Muted" Color="#6B6E75" />
+            <SolidColorBrush x:Key="Bolt.Fg.Subtle" Color="#777A81" />
+            <SolidColorBrush x:Key="Bolt.Fg.Faint" Color="#8A8D94" />
+            <SolidColorBrush x:Key="Bolt.Fg.Fainter" Color="#9EA1A7" />
+            <SolidColorBrush x:Key="Bolt.Fg.Ghost" Color="#B1B3B8" />
+            <SolidColorBrush x:Key="Bolt.Fg.Dot" Color="#B4B6BB" />
+            <SolidColorBrush x:Key="Bolt.Fg.Hint" Color="#B8BABF" />
+            <SolidColorBrush x:Key="Bolt.Fg.OnAccent" Color="#FFFFFF" />
+
+            <SolidColorBrush x:Key="Bolt.Success" Color="#1F9D63" />
+            <SolidColorBrush x:Key="Bolt.Chart.1" Color="#2A78D6" />
+            <SolidColorBrush x:Key="Bolt.Chart.2" Color="#EB6834" />
+            <SolidColorBrush x:Key="Bolt.Danger" Color="#D2473B" />
+            <SolidColorBrush x:Key="Bolt.Warning" Color="#B86E1E" />
+            <SolidColorBrush x:Key="Bolt.Success.Bg" Color="#1A1F9D63" />
+            <SolidColorBrush x:Key="Bolt.Danger.Bg" Color="#1AD2473B" />
+            <SolidColorBrush x:Key="Bolt.Warning.Bg" Color="#1AB86E1E" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+
+    <!-- Type -->
+    <FontFamily x:Key="Bolt.Font.Sans">avares://Bolt.Theme/Assets/Fonts#Geist</FontFamily>
+    <FontFamily x:Key="Bolt.Font.Mono">avares://Bolt.Theme/Assets/Fonts#Geist Mono</FontFamily>
+    <x:Double x:Key="Bolt.FontSize.Caption">11</x:Double>
+    <x:Double x:Key="Bolt.FontSize.Small">11.5</x:Double>
+    <x:Double x:Key="Bolt.FontSize.Control">12.5</x:Double>
+    <x:Double x:Key="Bolt.FontSize.Body">13</x:Double>
+    <x:Double x:Key="Bolt.FontSize.Reading">13.5</x:Double>
+    <x:Double x:Key="Bolt.FontSize.Title">15</x:Double>
+
+    <!-- Shape -->
+    <CornerRadius x:Key="Bolt.Radius.Tag">4</CornerRadius>
+    <CornerRadius x:Key="Bolt.Radius.Row">6</CornerRadius>
+    <CornerRadius x:Key="Bolt.Radius.Control">7</CornerRadius>
+    <CornerRadius x:Key="Bolt.Radius.Card">8</CornerRadius>
+    <CornerRadius x:Key="Bolt.Radius.Panel">12</CornerRadius>
+    <CornerRadius x:Key="Bolt.Radius.Pill">15</CornerRadius>
+    <CornerRadius x:Key="Bolt.Radius.Bubble">14,14,4,14</CornerRadius>
+    <x:Double x:Key="Bolt.ControlHeight">30</x:Double>
+    <x:Double x:Key="Bolt.FieldHeight">32</x:Double>
+</ResourceDictionary>

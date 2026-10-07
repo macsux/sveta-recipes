@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Text.Json;
+using Avalonia.Media.Imaging;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Claude.AgentSdk;
@@ -15,10 +16,26 @@ public abstract partial class ChatItem : ObservableObject
     [ObservableProperty] private bool _isShown = true;
 }
 
-public sealed class UserChatItem(string text) : ChatItem
+/// <summary>A screenshot in the conversation (a part of the app she pointed at); click opens it.</summary>
+public sealed record ChatPicture(string Path, Bitmap? Image);
+
+public sealed class UserChatItem(string text, IReadOnlyList<string>? images = null) : ChatItem
+{
+    public string Text { get; } = text;
+    /// <summary>The parts of the app she pointed at (marked screenshots), if any.</summary>
+    public IReadOnlyList<ChatPicture> Pictures { get; } =
+        (images ?? []).Select(p => new ChatPicture(p, ChatViewModel.LoadImage(p))).Where(p => p.Image is not null).ToList();
+    public bool HasPictures => Pictures.Count > 0;
+}
+
+/// <summary>Something the app did, shown small between messages (a change applied, a restart that failed).</summary>
+public sealed class NoteChatItem(string text) : ChatItem
 {
     public string Text { get; } = text;
 }
+
+/// <summary>A part of the app attached to the message being written.</summary>
+public sealed record PickedAttachment(PickedArea Area, Bitmap? Thumbnail);
 
 public sealed partial class AssistantChatItem : ChatItem
 {
@@ -74,6 +91,17 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
     }
 
     public ObservableCollection<ChatItem> Items { get; } = [];
+    /// <summary>Where screenshots of picked parts of the app are kept (with the chats).</summary>
+    public string PicksFolder => Path.Combine(_folder, "picks");
+    /// <summary>Parts of the app she pointed at, sent with the next message.</summary>
+    public ObservableCollection<PickedAttachment> Attachments { get; } = [];
+    public bool HasAttachments => Attachments.Count > 0;
+
+    public void Attach(PickedArea area)
+    {
+        Attachments.Add(new PickedAttachment(area, LoadImage(area.CloseUpPath)));
+        OnPropertyChanged(nameof(HasAttachments));
+    }
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SendCommand))] private string _draft = "";
     [ObservableProperty] [NotifyCanExecuteChangedFor(nameof(SendCommand))] private bool _isBusy;
     [ObservableProperty] private bool _showToolCalls;
@@ -93,20 +121,45 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
     {
         var text = Draft.Trim();
         var context = _main.DescribeView();
+        var picks = Attachments.Select(a => a.Area).ToList();
         Draft = "";
-        Record(new TranscriptEntry("user", DateTime.Now, Text: text, Context: context));
+        Attachments.Clear();
+        OnPropertyChanged(nameof(HasAttachments));
+        Record(new TranscriptEntry("user", DateTime.Now, Text: text, Context: context,
+            Images: picks.Count > 0 ? picks.Select(p => p.ImagePath).ToArray() : null,
+            Targets: picks.Count > 0 ? picks.Select(p => p.Description).ToArray() : null));
+        await Turn($"[Open in the app: {context}]\n\n{text}", picks);
+    }
+
+    /// <summary>
+    /// A request from the app itself (e.g. fix a failed development-mode setup): shown as a note, the prompt is sent as
+    /// is. False if a conversation turn is already running or the assistant failed.
+    /// </summary>
+    public async Task<bool> RunForApp(string note, string prompt)
+    {
+        if (IsBusy) return false;
+        Note(note);
+        return await Turn(prompt, []);
+    }
+
+    /// <summary>One exchange: sends the prompt and shows the reply as it streams in. False if it failed.</summary>
+    private async Task<bool> Turn(string prompt, List<PickedArea> picks)
+    {
         IsBusy = true;
         try
         {
             _client ??= await Connect();
-            await _client.QueryAsync($"[Open in the app: {context}]\n\n{text}");
+            if (picks.Count == 0) await _client.QueryAsync(prompt);
+            else await _client.QueryAsync(WithPictures(prompt, picks));
             await foreach (var message in _client.ReceiveResponseAsync())
                 Handle(message);
+            return true;
         }
         catch (Exception e)
         {
             Record(new TranscriptEntry("error", DateTime.Now, Text: Explain(e)));
             await Reset();
+            return false;
         }
         finally
         {
@@ -121,7 +174,10 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
     {
         async Task<ClaudeSDKClient> Start(string? resume)
         {
-            var client = new ClaudeSDKClient(Assistant.Options(_main.Book, _main.DataChangedOutside, _folder, resume));
+            var dev = _main.Dev.IsDevMode
+                ? new DevContext(DevMode.SourceDir, _main.Dev.RunningBuild!, _main.Dev.Revision, _main.Book.DbPath, DevMode.CheckDir, _main.Dev.PrepareForAssistant)
+                : null;
+            var client = new ClaudeSDKClient(Assistant.Options(_main.Book, _main.DataChangedOutside, _folder, resume, dev));
             await Task.Run(() => client.ConnectAsync());
             return client;
         }
@@ -134,6 +190,50 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
             _sessionId = null;
             return await Start(null);
         }
+    }
+
+    /// <summary>One user message: the text, then for each part of the app she pointed at its description and pictures.</summary>
+    private static async IAsyncEnumerable<Dictionary<string, object?>> WithPictures(string text, List<PickedArea> picks)
+    {
+        var content = new List<object?> { Text(text) };
+        for (var i = 0; i < picks.Count; i++)
+        {
+            content.Add(Text(picks.Count == 1 ? $"[{picks[i].Description}]" : $"[Part {i + 1} of {picks.Count} she pointed at. {picks[i].Description}]"));
+            foreach (var png in new[] { picks[i].ImagePath, picks[i].CloseUpPath })
+                content.Add(new Dictionary<string, object?>
+                {
+                    ["type"] = "image",
+                    ["source"] = new Dictionary<string, object?>
+                    {
+                        ["type"] = "base64", ["media_type"] = "image/png", ["data"] = Convert.ToBase64String(await File.ReadAllBytesAsync(png)),
+                    },
+                });
+        }
+        yield return new Dictionary<string, object?>
+        {
+            ["type"] = "user",
+            ["message"] = new Dictionary<string, object?> { ["role"] = "user", ["content"] = content },
+            ["parent_tool_use_id"] = null,
+        };
+    }
+
+    private static Dictionary<string, object?> Text(string text) => new() { ["type"] = "text", ["text"] = text };
+
+    [RelayCommand]
+    private void RemoveAttachment(PickedAttachment attachment)
+    {
+        Attachments.Remove(attachment);
+        OnPropertyChanged(nameof(HasAttachments));
+    }
+
+    /// <summary>Notes what the app did in the conversation (saved with it; not sent to Claude).</summary>
+    public void Note(string text) => Record(new TranscriptEntry("note", DateTime.Now, Text: text));
+
+    public static Bitmap? LoadImage(string? path)
+    {
+        if (path is null || !File.Exists(path)) return null;
+        try { return new Bitmap(path); }
+        catch (Exception) { return null; }
     }
 
     [RelayCommand]
@@ -241,7 +341,7 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
         switch (entry.Kind)
         {
             case "user":
-                Add(new UserChatItem(entry.Text ?? ""));
+                Add(new UserChatItem(entry.Text ?? "", entry.Images));
                 break;
             case "assistant":
                 // Live text was already shown as it streamed in.
@@ -259,6 +359,9 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
                 break;
             case "error":
                 Add(new ErrorChatItem(entry.Text ?? ""));
+                break;
+            case "note":
+                Add(new NoteChatItem(entry.Text ?? ""));
                 break;
             case "session":
                 _sessionId = entry.SessionId;
