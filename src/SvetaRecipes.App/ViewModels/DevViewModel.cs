@@ -18,7 +18,7 @@ public sealed partial class DevViewModel(MainViewModel main) : ViewModelBase
     public string? RunningBuild { get; } = DevMode.RunningBuild;
     /// <summary>The commit the running app was built from (short).</summary>
     public string? Revision { get; } = Updates.Revision;
-    public string ModeLabel => IsDevMode ? $"Development{(Revision is { } r ? " · " + r : "")}" : "Release";
+    public string ModeLabel => "Mode: " + (IsDevMode ? $"Development{(Revision is { } r ? " · " + r : "")}" : "Release");
 
     /// <summary>
     /// Set by the window: closes the normal way (unsaved edits are asked about), runs the start, and exits if it returns
