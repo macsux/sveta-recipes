@@ -26,6 +26,9 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty] private int _selectedTab;
     [ObservableProperty] private bool _isAssistantOpen;
+    /// <summary>A downloaded update's version while the "restart to update" bar is up.</summary>
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsUpdateReady))] private string? _updateReady;
+    public bool IsUpdateReady => UpdateReady is not null;
 
     public MainViewModel(RecipeBook book, Window window)
     {
@@ -40,7 +43,13 @@ public partial class MainViewModel : ViewModelBase
         Assistant = new ChatViewModel(this);
         _isAssistantOpen = book.GetSetting(SettingKeys.AssistantOpen) == "1";
         Recipes.Activate();
+        Updates.Ready += () => UpdateReady = Updates.ReadyVersion;
+        _updateReady = Updates.ReadyVersion;
     }
+
+    /// <summary>"Later": the bar goes away; the update still installs when the app closes.</summary>
+    [CommunityToolkit.Mvvm.Input.RelayCommand]
+    private void DismissUpdate() => UpdateReady = null;
 
     partial void OnIsAssistantOpenChanged(bool value) => Book.SetSetting(SettingKeys.AssistantOpen, value ? "1" : "0");
 

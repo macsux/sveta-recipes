@@ -99,8 +99,6 @@
                         <TextBox Text="{Binding DatabasePath}" IsReadOnly="True" Classes="mono" FontSize="12" />
                         <Button Grid.Column="1" Content="Open folder" Command="{Binding OpenDataFolderCommand}" />
                     </Grid>
-                    <TextBlock Text="{Binding AboutText}" Classes="small muted" Margin="0,16,0,0" />
-                    <TextBlock Text="{Binding UpdateStatus}" Classes="small muted" TextWrapping="Wrap" />
                 </StackPanel>
             </ScrollViewer>
         </TabItem>
@@ -217,6 +215,22 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </DockPanel>
+        </TabItem>
+
+        <!-- ===================================================== About -->
+        <TabItem Header="About">
+            <ScrollViewer>
+                <StackPanel Margin="28,20" Spacing="10" MaxWidth="860" HorizontalAlignment="Left">
+                    <TextBlock Text="Sveta's Recipes" Classes="title" />
+                    <TextBlock Text="{Binding Version}" Classes="secondary" />
+                    <TextBlock Text="{Binding UpdateStatus}" Classes="small muted" TextWrapping="Wrap"
+                               IsVisible="{Binding UpdateStatus, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <TextBlock Text="Rebuilt from the Sveta Recipe Database (Access, v3.2, 2021)." Classes="small muted" />
+                    <Border Classes="hairline" Margin="0,16,0,6" />
+                    <TextBlock Text="WHAT'S NEW" Classes="caption" />
+                    <b:MarkdownBlock Markdown="{Binding ReleaseNotes}" />
+                </StackPanel>
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </UserControl>

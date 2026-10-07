@@ -10,23 +10,20 @@ using SvetaRecipes.Core.Services;
 namespace SvetaRecipes.App.Services;
 
 /// <summary>
-/// The assistant panel's agent, on the .NET Claude Agent SDK as in aibolt: the Claude Code CLI as a subprocess, its own
-/// tools switched off, and an in-process MCP server ("recipes") giving it the database. It writes with SQL directly;
+/// The assistant panel's agent, on the .NET Claude Agent SDK as in aibolt: the Claude Code CLI as a subprocess with its
+/// own tools (web, files, shell), and an in-process MCP server ("recipes") giving it the database. It writes with SQL directly;
 /// the app reloads after every write (<paramref name="dataChanged"/>, raised on the UI thread).
 /// </summary>
 public static class Assistant
 {
     public const string ServerName = "recipes";
-    public static string ToolName(string tool) => $"mcp__{ServerName}__{tool}";
 
     /// <param name="resume">Claude Code session to continue (the reopened conversation), or null for a new one.</param>
     public static ClaudeAgentOptions Options(RecipeBook book, Action dataChanged, string workFolder, string? resume) => new()
     {
         Model = "sonnet",
         SystemPrompt = SystemPrompt(),
-        // No built-in tools (files, shell, web): the database tools below are all it gets.
-        Tools = [],
-        AllowedTools = [ToolName("sql"), ToolName("backup"), ToolName("get_costing"), ToolName("find_similar")],
+        // Claude Code's own tools (web search/fetch, files, shell) plus the database tools below, all without asking.
         PermissionMode = PermissionMode.BypassPermissions,
         McpServers = McpServersConfig.FromServers(new Dictionary<string, object> { [ServerName] = Tools(book, dataChanged) }),
         StrictMcpConfig = true,
@@ -49,8 +46,10 @@ public static class Assistant
           datetime('now','localtime'), units from Units.Code. Don't touch data she didn't ask about.
         - get_costing gives a recipe's live cost. Costs are never stored; use it for anything about cost.
         - find_similar finds recipes with a similar composition (sub-recipes expanded, compared by weight share).
+        Change the database only through sql, never the file directly. You also have Claude Code's usual tools: web
+        search and fetch (a recipe from a link, an ingredient, a technique), and files and a shell on her PC.
 
-        Importing a recipe: map every line to an existing ingredient or sub-recipe (names differ: "heavy cream" may be
+        Importing a recipe (pasted, or from a link: fetch it): map every line to an existing ingredient or sub-recipe (names differ: "heavy cream" may be
         "Cream 35%"); convert amounts to grams yourself; run find_similar on the whole recipe and on each component that
         could be one of her sub-recipes; then decide. A duplicate: say which recipe and don't import. A variant: import
         it, say what differs and write that in Description. Reuse her sub-recipes where they match. Create missing

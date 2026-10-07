@@ -4,6 +4,7 @@ using Avalonia.Headless;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using SvetaRecipes.App;
+using SvetaRecipes.App.Services;
 using SvetaRecipes.App.ViewModels;
 using SvetaRecipes.App.Views;
 using SvetaRecipes.Core.Costing;
@@ -37,6 +38,7 @@ AppBuilder.Configure<App>()
 App.ApplyTheme(args.Length > 2 ? args[2] : "Light");
 
 var book = RecipeBook.Open(db);
+book.SetSetting(SettingKeys.BackupFolder, Path.Combine(outDir, "backups"));   // not her real Documents folder
 var window = new MainWindow { Width = 1366, Height = 768, WindowState = WindowState.Normal };
 var vm = new MainViewModel(book, window);
 window.DataContext = vm;
@@ -120,6 +122,19 @@ foreach (var (tab, name) in new[] { (1, "04-ingredients"), (3, "09-invoices"), (
     vm.SelectedTab = tab;
     Shot(window, name);
 }
+var toolTabs = window.GetVisualDescendants().OfType<TabControl>().First(t => t.Classes.Contains("large"));
+toolTabs.SelectedIndex = toolTabs.ItemCount - 1;
+Shot(window, "07b-about");
+Check(vm.Tools.ReleaseNotes.Contains("## 1.0.0") && !vm.Tools.ReleaseNotes.StartsWith("# "), "About shows the release history (CHANGELOG.md is built in)");
+toolTabs.SelectedIndex = 0;
+
+// A downloaded update: the bar offers a restart; "Later" hides it.
+Updates.MarkReady("9.9.9");
+Pump();
+Check(vm.IsUpdateReady && vm.UpdateReady == "9.9.9", "a downloaded update shows the restart bar");
+Shot(window, "08-update-ready");
+vm.DismissUpdateCommand.Execute(null);
+Check(!vm.IsUpdateReady, "Later hides the update bar");
 vm.GoToIngredient(subIngredient.Id);
 Shot(window, "04b-ingredient-selected");
 
@@ -233,6 +248,10 @@ if (args.Contains("--live"))
     while (!closing.IsCompleted) { Pump(); Thread.Sleep(50); }
     var remember = Ask("What was the name of the recipe you just added? Answer with the name only.");
     Check(remember.Contains("shortbread", StringComparison.OrdinalIgnoreCase), "live: a follow-up remembers the conversation");
+
+    Ask("Search the web: what temperature range is usually given for tempering dark chocolate? One line.");
+    Check(vm.Assistant.Items.OfType<ToolChatItem>().Any(t => t.Tool is "WebSearch" or "WebFetch"), "live: the assistant can search the web");
+    Shot(window, "16-assistant-web");
 }
 
 Console.WriteLine(failures.Count == 0 ? "ALL PASSED" : $"{failures.Count} FAILED");

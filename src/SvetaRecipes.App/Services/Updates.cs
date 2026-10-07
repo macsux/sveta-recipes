@@ -1,3 +1,4 @@
+using Avalonia.Threading;
 using Velopack;
 using Velopack.Sources;
 
@@ -5,13 +6,26 @@ namespace SvetaRecipes.App.Services;
 
 /// <summary>
 /// Updates come from the GitHub releases of the public repo (they contain no data). An update is downloaded in the
-/// background and applied silently when the app closes, so the next start is the new version — nothing for her to do.
+/// background; the window then offers to restart into it (<see cref="Ready"/>). If she carries on instead, it is applied
+/// silently when the app closes, so the next start is the new version either way.
 /// </summary>
 public static class Updates
 {
     public const string RepoUrl = "https://github.com/macsux/sveta-recipes";
 
+    private static UpdateManager? _manager;
+    private static VelopackAsset? _pending;
+
     public static string Status { get; private set; } = "";
+
+    /// <summary>The downloaded version waiting to be installed, if any.</summary>
+    public static string? ReadyVersion { get; private set; }
+
+    /// <summary>Raised on the UI thread when an update has been downloaded.</summary>
+    public static event Action? Ready;
+
+    /// <summary>The running version (from the build; 1.0.0 in a development copy).</summary>
+    public static string CurrentVersion => typeof(Updates).Assembly.GetName().Version?.ToString(3) ?? "?";
 
     public static void CheckInBackground() => Task.Run(async () =>
     {
@@ -30,8 +44,9 @@ public static class Updates
                 return;
             }
             await mgr.DownloadUpdatesAsync(update);
-            mgr.WaitExitThenApplyUpdates(update.TargetFullRelease, silent: true, restart: false);
-            Status = $"Version {update.TargetFullRelease.Version} is ready and will be installed when the app is closed.";
+            _manager = mgr;
+            _pending = update.TargetFullRelease;
+            MarkReady(update.TargetFullRelease.Version.ToString());
         }
         catch (Exception e)
         {
@@ -39,4 +54,20 @@ public static class Updates
             Status = "Could not check for updates: " + e.Message;
         }
     });
+
+    /// <summary>Announces a downloaded update (public so the smoke test can show the prompt).</summary>
+    public static void MarkReady(string version)
+    {
+        ReadyVersion = version;
+        Status = $"Version {version} is ready and will be installed when the app is closed.";
+        Dispatcher.UIThread.Post(() => Ready?.Invoke());
+    }
+
+    /// <summary>Called as the app closes: installs a downloaded update once it has exited, and restarts it if asked.</summary>
+    public static void ApplyOnExit(bool restart)
+    {
+        if (_manager is null || _pending is null) return;
+        try { _manager.WaitExitThenApplyUpdates(_pending, silent: true, restart: restart); }
+        catch { /* the update stays downloaded; the next start tries again */ }
+    }
 }

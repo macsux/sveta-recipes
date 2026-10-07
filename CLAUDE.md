@@ -17,6 +17,7 @@ src/SvetaRecipes.App       Avalonia UI (MVVM, CommunityToolkit.Mvvm), one tab pe
 tools/SvetaRecipes.Import  legacy .mdb → new database (needs mdbtools; Mac only)
 tools/SvetaRecipes.Shots   headless smoke test + screenshots of every screen (no display needed)
 tests/SvetaRecipes.Core.Tests   engine tests + parity against the legacy data
+CHANGELOG.md               release notes, one section per version (shown in the app under About)
 release.sh                 test → publish → Velopack pack → (--upload) GitHub release, (--seed) private handoff installer
 legacy/                    the Access files as received, extracted CSV/VBA/screenshots, ANALYSIS.md
 ```
@@ -88,8 +89,9 @@ Access screen to the cent, line by line. Keep it green.
 A collapsible chat column on the right (toggle top-right; open state in setting `AssistantOpen`). Same integration as
 aibolt: the .NET Claude Agent SDK (`../claude-agent-sdk-dotnet`, `ClaudeAgentSdkDir` in `Directory.Build.props`) runs
 the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed and logged in. `Services/Assistant.cs`:
-- Claude Code's own tools are off (`Tools = []`), no settings/CLAUDE.md/skills from the PC (`SettingSources = []`).
-  It gets an in-process MCP server `recipes`: `sql` (any SQL, reads **and writes**, `Core/Assistant/SqlRunner.cs`),
+- Claude Code's own tools are on (web search/fetch, files, shell; `BypassPermissions`, so nothing asks), but no
+  settings/CLAUDE.md/skills from the PC (`SettingSources = []`); its working folder is `assistant/` next to the DB.
+  The prompt says to change the database only through `sql`. It also gets an in-process MCP server `recipes`: `sql` (any SQL, reads **and writes**, `Core/Assistant/SqlRunner.cs`),
   `backup` (snapshot; the prompt says to call it before the first write), `get_costing` (live `CostCalculator`),
   `find_similar` (`Core/Assistant/Similarity.cs`). Unit conversions are left to the model.
 - The system prompt carries the schema, generated from the EF model by `Core/Assistant/DbSchema.cs` (enum values,
@@ -105,7 +107,7 @@ the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed a
 - Every chat is saved as JSON lines in `assistant/chat-*.jsonl` next to the DB (`Services/Transcript.cs`: user text +
   what was open, replies, full tool inputs/results, the Claude session id). On start the latest is shown and its
   session resumed (a fresh one if resume fails); "+" starts a new chat. Tool calls show as expandable rows with the
-  complete input and result; the "Tool calls" toggle under the composer hides them (setting `AssistantShowTools`).
+  complete input and result; the wrench toggle in the panel header hides them (setting `AssistantShowTools`).
 
 ## UI gotchas (both cost real debugging)
 
@@ -133,11 +135,17 @@ asleep/locked (or from a sandboxed shell) — use the Shots tool, which renders 
 
 ## Releases, updates and her data
 
+- **Every release has release notes in `CHANGELOG.md`**: a `## <version> — <date>` section listing everything that
+  changed since the previous release (check `git log v<previous>..HEAD`), written for Sveta — plain words, what she
+  will notice, no code talk. Write it before running `release.sh`, which refuses a version without a section and uses
+  it as the GitHub release notes. The app shows the whole file under Tools & settings → About (embedded resource).
+
 - **Public repo** github.com/macsux/sveta-recipes — **no user data, ever.** `legacy/` (her Access files, extracts,
   screenshots), `docs/old-vs-new/`, `.data/`, `publish/`, `Releases/` and every `*.db` are git-ignored. Test
   expectations about her data are read from the legacy dump at run time, not hard-coded.
 - Updates: Velopack (`VelopackApp.Build().Run()` first thing in `Main`; `Services/Updates.cs`). The app checks the
-  GitHub releases on start, downloads in the background and applies silently on exit. Releases are packed with
+  GitHub releases on start and downloads in the background; then a bar at the top offers "Restart now" (closes the
+  normal way, so unsaved edits are asked about, and relaunches) or "Later" (installed silently on exit). Releases are packed with
   `--delta None` because her install began from the seeded package (deltas against the public one wouldn't apply).
 - Day one: `./release.sh <version> --upload --seed <SRD_data.mdb> <SRD_2018_u.mdb>` → public release on GitHub +
   `publish/handoff/Sveta's Recipes Setup <version>.exe`, the same version with her data as `seed/recipes.db`.

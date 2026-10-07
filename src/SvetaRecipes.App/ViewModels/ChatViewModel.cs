@@ -11,7 +11,7 @@ namespace SvetaRecipes.App.ViewModels;
 
 public abstract partial class ChatItem : ObservableObject
 {
-    /// <summary>False hides it (tool calls while "Tool calls" is off).</summary>
+    /// <summary>False hides it (tool calls while the tool-calls switch is off).</summary>
     [ObservableProperty] private bool _isShown = true;
 }
 
@@ -29,7 +29,7 @@ public sealed partial class AssistantChatItem : ChatItem
 public sealed partial class ToolChatItem(string id, string tool, string label, string input) : ChatItem
 {
     public string Id { get; } = id;
-    /// <summary>The tool's own name (sql, find_similar, …).</summary>
+    /// <summary>The tool's own name (sql, find_similar, WebSearch, …).</summary>
     public string Tool { get; } = tool;
     public string Label { get; } = label;
     public string Input { get; } = input;
@@ -260,13 +260,23 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
     private ToolChatItem Describe(string id, string name, JsonElement? input)
     {
         var tool = name.StartsWith($"mcp__{Assistant.ServerName}__") ? name[$"mcp__{Assistant.ServerName}__".Length..] : name;
-        var query = input is { ValueKind: JsonValueKind.Object } i && i.TryGetProperty("query", out var q) ? q.GetString() ?? "" : null;
+        // The one field worth showing on its own: the SQL, the search, the command.
+        var query = input is { ValueKind: JsonValueKind.Object } i
+                    && (i.TryGetProperty("query", out var q) || i.TryGetProperty("command", out q)) && q.ValueKind == JsonValueKind.String
+            ? q.GetString() ?? "" : null;
         var label = tool switch
         {
             "sql" => IsWrite(query ?? "") ? "Changed your data" : "Looked in your data",
             "backup" => "Made a backup",
             "get_costing" => "Worked out the cost",
             "find_similar" => "Compared with your recipes",
+            "WebSearch" => "Searched the web",
+            "WebFetch" => "Read a web page",
+            "Bash" or "PowerShell" => "Ran a command",
+            "Read" => "Read a file",
+            "Write" or "Edit" or "MultiEdit" or "NotebookEdit" => "Changed a file",
+            "Glob" or "Grep" => "Looked through files",
+            "ToolSearch" => "Got a tool ready",
             _ => tool,
         };
         var text = query?.Trim() ?? (input is { ValueKind: JsonValueKind.Object } o && o.EnumerateObject().Any()

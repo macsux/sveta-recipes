@@ -6,30 +6,28 @@
              x:DataType="vm:ChatViewModel">
     <DockPanel>
         <!-- Header -->
-        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" Margin="16,10,8,6">
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto,Auto" Margin="16,10,8,6">
             <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                 <b:Icon Data="{StaticResource Bolt.Icon.Bot}" Size="16" />
                 <TextBlock Classes="h2" Text="Assistant" />
             </StackPanel>
-            <Button Grid.Column="1" Classes="icon" Command="{Binding NewChatCommand}" ToolTip.Tip="New chat">
+            <ToggleButton Grid.Column="1" Classes="icon" IsChecked="{Binding ShowToolCalls}"
+                          ToolTip.Tip="Show the assistant's tool calls (database queries, costing, web searches) in the conversation">
+                <b:Icon Data="{StaticResource Bolt.Icon.Wrench}" Size="14" />
+            </ToggleButton>
+            <Button Grid.Column="2" Classes="icon" Command="{Binding NewChatCommand}" ToolTip.Tip="New chat">
                 <b:Icon Data="{StaticResource Bolt.Icon.Plus}" Size="14" />
             </Button>
-            <Button Grid.Column="2" Classes="icon" Click="Close" ToolTip.Tip="Hide the assistant">
+            <Button Grid.Column="3" Classes="icon" Click="Close" ToolTip.Tip="Hide the assistant">
                 <b:Icon Data="{StaticResource Bolt.Icon.Close}" Size="14" />
             </Button>
         </Grid>
         <Border DockPanel.Dock="Top" Classes="hairline" />
 
-        <!-- Status row -->
-        <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="6" Margin="12,0,12,10">
-            <ToggleButton Classes="pill" Content="Tool calls" IsChecked="{Binding ShowToolCalls}"
-                          ToolTip.Tip="Show the assistant's tool calls (database queries, costing, comparisons) in the conversation" />
-        </StackPanel>
-
         <!-- Composer -->
-        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,8,12,8">
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" ColumnSpacing="8" Margin="12,8,12,12">
             <TextBox x:Name="Composer" Classes="composer" Text="{Binding Draft}" AcceptsReturn="True" TextWrapping="Wrap"
-                     MaxHeight="200" PlaceholderText="Ask about your recipes, or paste one to import" KeyDown="OnComposerKeyDown" />
+                     MaxHeight="200" PlaceholderText="Ask about your recipes" KeyDown="OnComposerKeyDown" />
             <Button Grid.Column="1" Classes="accent" VerticalAlignment="Bottom" Command="{Binding SendCommand}"
                     IsVisible="{Binding !IsBusy}" ToolTip.Tip="Send (Enter)">
                 <b:Icon Data="{StaticResource Bolt.Icon.ChevronRight}" Size="14" />

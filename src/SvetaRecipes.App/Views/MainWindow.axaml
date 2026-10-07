@@ -8,8 +8,20 @@
         Width="1360" Height="820" MinWidth="1100" MinHeight="660"
         WindowStartupLocation="CenterScreen" WindowState="Maximized">
     <!-- The assistant is a collapsible column on the right; its width is set in code-behind (0 while hidden). -->
-    <Grid x:Name="Root" ColumnDefinitions="*,Auto,0">
-        <TabControl SelectedIndex="{Binding SelectedTab}" Padding="0">
+    <Grid x:Name="Root" ColumnDefinitions="*,Auto,0" RowDefinitions="Auto,*">
+        <!-- A downloaded update: restart into it now, or later (it installs when the app closes). -->
+        <Border Grid.ColumnSpan="3" Classes="card" Margin="12,8,12,4" Padding="14,8" IsVisible="{Binding IsUpdateReady}">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <b:Icon Data="{StaticResource Bolt.Icon.Refresh}" Size="14" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" TextWrapping="Wrap">
+                    <Run Text="A new version of Sveta's Recipes is ready (" /><Run Text="{Binding UpdateReady}" /><Run Text=")." />
+                    <Run Text="Restart to start using it, or carry on and it installs when you close the app." Foreground="{DynamicResource Bolt.Fg.Muted}" />
+                </TextBlock>
+                <Button Grid.Column="2" Classes="ghost" Content="Later" Command="{Binding DismissUpdateCommand}" />
+                <Button Grid.Column="3" Classes="accent" Content="Restart now" Click="RestartForUpdate" />
+            </Grid>
+        </Border>
+        <TabControl Grid.Row="1" SelectedIndex="{Binding SelectedTab}" Padding="0">
             <TabItem Header="Recipes">
                 <ContentControl Content="{Binding Recipes}" />
             </TabItem>
@@ -29,14 +41,14 @@
                 <ContentControl Content="{Binding Tools}" />
             </TabItem>
         </TabControl>
-        <ToggleButton Classes="pill" IsChecked="{Binding IsAssistantOpen}" HorizontalAlignment="Right" VerticalAlignment="Top"
+        <ToggleButton Grid.Row="1" Classes="pill" IsChecked="{Binding IsAssistantOpen}" HorizontalAlignment="Right" VerticalAlignment="Top"
                       Margin="0,8,12,0" ToolTip.Tip="Show or hide the assistant">
             <StackPanel Orientation="Horizontal" Spacing="6">
                 <b:Icon Data="{StaticResource Bolt.Icon.Chat}" Size="14" />
                 <TextBlock Text="Assistant" />
             </StackPanel>
         </ToggleButton>
-        <GridSplitter Grid.Column="1" Width="1" IsVisible="{Binding IsAssistantOpen}" />
-        <ContentControl Grid.Column="2" Content="{Binding Assistant}" IsVisible="{Binding IsAssistantOpen}" />
+        <GridSplitter Grid.Row="1" Grid.Column="1" Width="1" IsVisible="{Binding IsAssistantOpen}" />
+        <ContentControl Grid.Row="1" Grid.Column="2" Content="{Binding Assistant}" IsVisible="{Binding IsAssistantOpen}" />
     </Grid>
 </Window>

@@ -157,8 +157,18 @@ public partial class ToolsViewModel : ViewModelBase, ISection
 
     public string UpdateStatus => Services.Updates.Status;
 
-    public string AboutText =>
-        $"Sveta's Recipes {typeof(App).Assembly.GetName().Version?.ToString(3)}  ·  rebuilt from the Sveta Recipe Database (Access, v3.2, 2021)";
+    public string Version => "Version " + Services.Updates.CurrentVersion;
+
+    /// <summary>CHANGELOG.md (built into the app) without its title: one section per release.</summary>
+    public string ReleaseNotes { get; } = LoadReleaseNotes();
+
+    private static string LoadReleaseNotes()
+    {
+        using var stream = typeof(ToolsViewModel).Assembly.GetManifestResourceStream("CHANGELOG.md");
+        if (stream is null) return "";
+        var text = new StreamReader(stream).ReadToEnd().ReplaceLineEndings("\n");
+        return text.StartsWith("# ") ? text[(text.IndexOf('\n') + 1)..].TrimStart() : text;
+    }
 
     [RelayCommand]
     private void OpenCalculator()

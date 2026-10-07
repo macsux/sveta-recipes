@@ -3,7 +3,7 @@
 #
 #   ./release.sh <version> [--upload] [--seed <SRD_data.mdb> <SRD_2018_u.mdb>]
 #
-#   (always)  tests, publishes win-x64 and packs the PUBLIC release into Releases/ — no data in it.
+#   (always)  checks CHANGELOG.md has a "## <version>" section (the release notes), tests, publishes win-x64 and packs the PUBLIC release into Releases/ — no data in it.
 #   --upload  publishes that release on GitHub (macsux/sveta-recipes); installed apps update from there.
 #   --seed    also builds the HANDOFF installer: the same version with her data imported from the Access files
 #             as seed/recipes.db (used only on first start, never overwrites). Output: publish/handoff/.
@@ -28,13 +28,22 @@ done
 repo=https://github.com/macsux/sveta-recipes
 vpk=${VPK:-$HOME/.dotnet/tools/vpk}
 pack=(--packId SvetaRecipes --packVersion "$version" --packTitle "Sveta's Recipes" --packAuthors macsux
-      --mainExe SvetaRecipes.exe --channel win --runtime win-x64 --delta None
+      --mainExe SvetaRecipes.exe --channel win --runtime win-x64 --delta None --releaseNotes publish/release-notes.md
       --framework net10-x64-runtime)
 # --framework: the app ships WITHOUT the .NET runtime. Setup installs the .NET 10 runtime from Microsoft if the PC
 # doesn't have it, before installing the app; every later update is just the app and reuses that runtime.
 # (Avalonia needs only the base runtime, not the Windows Desktop one.)
 # --delta None: her installed copy started from the seeded package, so a delta against the public package would not
 # apply; full packages always do.
+
+# Release notes: the CHANGELOG.md section for this version (also shown in the app under Tools & settings → About).
+notes=publish/release-notes.md
+mkdir -p publish
+awk -v v="$version" '$0 ~ "^## "v"( |$)" {on=1; next} /^## / {on=0} on' CHANGELOG.md | sed -e '/./,$!d' > "$notes"
+if [[ ! -s "$notes" ]]; then
+  echo "CHANGELOG.md has no '## $version' section: write what changed since the last release first." >&2
+  exit 1
+fi
 
 dotnet test --project tests/SvetaRecipes.Core.Tests
 
@@ -48,6 +57,7 @@ echo "public release: Releases/"
 if $upload; then
   "$vpk" "[win]" upload github --outputDir Releases --channel win --repoUrl "$repo" --token "$(gh auth token)" \
     --publish --tag "v$version" --releaseName "Sveta's Recipes $version"
+  gh release edit "v$version" --repo "$repo" --notes-file "$notes"
   echo "uploaded to $repo/releases/tag/v$version"
 fi
 
