@@ -123,6 +123,14 @@ foreach (var (tab, name) in new[] { (1, "04-ingredients"), (3, "09-invoices"), (
     Shot(window, name);
 }
 var toolTabs = window.GetVisualDescendants().OfType<TabControl>().First(t => t.Classes.Contains("large"));
+toolTabs.SelectedIndex = toolTabs.ItemCount - 2;
+Shot(window, "07c-assistant-instructions");
+vm.Tools.AssistantInstructions = "Always answer in French.";
+Check(Assistant.SystemPrompt(book).StartsWith("Always answer in French.") && Assistant.SystemPrompt(book).Contains("RecipeLines(")
+      && vm.Tools.IsCustomInstructions, "edited assistant instructions are used, with the schema still appended");
+vm.Tools.ResetInstructionsCommand.Execute(null);
+Check(book.GetSetting(SettingKeys.AssistantPrompt) is null && Assistant.SystemPrompt(book).StartsWith(Assistant.DefaultInstructions),
+    "Reset to default goes back to the built-in instructions");
 toolTabs.SelectedIndex = toolTabs.ItemCount - 1;
 Shot(window, "07b-about");
 Check(vm.Tools.ReleaseNotes.Contains("## 1.0.0") && !vm.Tools.ReleaseNotes.StartsWith("# "), "About shows the release history (CHANGELOG.md is built in)");
@@ -224,8 +232,18 @@ if (args.Contains("--live"))
     foreach (var t in vm.Assistant.Items.OfType<ToolChatItem>().Where(t => t.Tool == "find_similar")) t.IsExpanded = true;
     Shot(window, "13-assistant-duplicate");
 
+    var pasted = Ask("""
+        Passion fruit shortbread
+        200 g butter
+        100 g icing sugar
+        300 g all-purpose flour
+        60 g passion fruit purée
+        1 pinch salt
+        """);
+    Check(book.Recipes.Count == recipesBefore, "live: a recipe pasted without asking is checked but not added");
+
     var variantReply = Ask("""
-        And this one, from a magazine:
+        Please add this one, from a magazine:
         Passion fruit shortbread
         200 g butter
         100 g icing sugar

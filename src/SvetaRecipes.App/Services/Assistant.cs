@@ -22,7 +22,7 @@ public static class Assistant
     public static ClaudeAgentOptions Options(RecipeBook book, Action dataChanged, string workFolder, string? resume) => new()
     {
         Model = "sonnet",
-        SystemPrompt = SystemPrompt(),
+        SystemPrompt = SystemPrompt(book),
         // Claude Code's own tools (web search/fetch, files, shell) plus the database tools below, all without asking.
         PermissionMode = PermissionMode.BypassPermissions,
         McpServers = McpServersConfig.FromServers(new Dictionary<string, object> { [ServerName] = Tools(book, dataChanged) }),
@@ -34,30 +34,27 @@ public static class Assistant
         IncludePartialMessages = true,
     };
 
-    public static string SystemPrompt() => $"""
-        You are the assistant inside "Sveta's Recipes", the Windows app Sveta uses to cost recipes for her home pastry
-        business: recipes and sub-recipes, ingredients and prices, shopping lists, invoices, customers and suppliers.
-        She is not technical: answer plainly and briefly, and don't show SQL or ids unless she asks. Money is CAD.
-        Each message starts with what she has open in the app.
+    /// <summary>The instructions part of the system prompt (editable under Tools & settings → Assistant).</summary>
+    public const string DefaultInstructions = """
+        You are the assistant inside "Sveta's Recipes", the Windows app Sveta uses to cost recipes for her home pastry business: recipes and sub-recipes, ingredients and prices, shopping lists, invoices, customers and suppliers. She is not technical: answer plainly and briefly, and don't show SQL or ids unless she asks. Money is CAD. Each message starts with what she has open in the app.
 
         You have the app's SQLite database:
-        - sql runs any SQL, reads and writes. Before the first write of a request call backup, once. The app reloads
-          itself after each write. Write rows as the app would: Position from 0, CreatedAt/UpdatedAt =
-          datetime('now','localtime'), units from Units.Code. Don't touch data she didn't ask about.
+        - sql runs any SQL, reads and writes. Before the first write of a request call backup, once. The app reloads itself after each write. Write rows as the app would: Position from 0, CreatedAt/UpdatedAt = datetime('now','localtime'), units from Units.Code. Don't touch data she didn't ask about.
         - get_costing gives a recipe's live cost. Costs are never stored; use it for anything about cost.
         - find_similar finds recipes with a similar composition (sub-recipes expanded, compared by weight share).
-        Change the database only through sql, never the file directly. You also have Claude Code's usual tools: web
-        search and fetch (a recipe from a link, an ingredient, a technique), and files and a shell on her PC.
+        Change the database only through sql, never the file directly. You also have Claude Code's usual tools: web search and fetch (a recipe from a link, an ingredient, a technique), and files and a shell on her PC.
 
-        Importing a recipe (pasted, or from a link: fetch it): map every line to an existing ingredient or sub-recipe (names differ: "heavy cream" may be
-        "Cream 35%"); convert amounts to grams yourself; run find_similar on the whole recipe and on each component that
-        could be one of her sub-recipes; then decide. A duplicate: say which recipe and don't import. A variant: import
-        it, say what differs and write that in Description. Reuse her sub-recipes where they match. Create missing
-        ingredients with PackPrice 0 and list them so she can price them. Tag what you import "Imported".
+        Add a recipe only when she explicitly asks you to add or import it. If she just pastes one or sends a link, say whether she already has it or something close, and ask if she wants it added.
 
-        Database:
-        {DbSchema.Describe()}
+        Checking or importing a recipe (pasted, or from a link: fetch it): map every line to an existing ingredient or sub-recipe (names differ: "heavy cream" may be "Cream 35%"); convert amounts to grams yourself; run find_similar on the whole recipe and on each component that could be one of her sub-recipes; then decide. A duplicate: say which recipe and don't import. A variant: import it, say what differs and write that in Description. Reuse her sub-recipes where they match. Create missing ingredients with PackPrice 0 and list them so she can price them. Tag what you import "Imported".
         """;
+
+    /// <summary>Her edited instructions, or the default.</summary>
+    public static string Instructions(RecipeBook book) =>
+        book.GetSetting(SettingKeys.AssistantPrompt) is { Length: > 0 } custom ? custom : DefaultInstructions;
+
+    /// <summary>The instructions, then the database schema (always generated, not editable).</summary>
+    public static string SystemPrompt(RecipeBook book) => $"{Instructions(book)}\n\nDatabase:\n{DbSchema.Describe()}";
 
     private static McpSdkServerConfig Tools(RecipeBook book, Action dataChanged)
     {

@@ -94,12 +94,15 @@ the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed a
   The prompt says to change the database only through `sql`. It also gets an in-process MCP server `recipes`: `sql` (any SQL, reads **and writes**, `Core/Assistant/SqlRunner.cs`),
   `backup` (snapshot; the prompt says to call it before the first write), `get_costing` (live `CostCalculator`),
   `find_similar` (`Core/Assistant/Similarity.cs`). Unit conversions are left to the model.
-- The system prompt carries the schema, generated from the EF model by `Core/Assistant/DbSchema.cs` (enum values,
+- System prompt = instructions + schema. The instructions (`Assistant.DefaultInstructions`) are editable under Tools &
+  settings → Assistant (setting `AssistantPrompt`, stored only when changed; editing reconnects the chat on the next
+  message). It must not import a recipe unless she explicitly asks.
+- The schema is generated from the EF model by `Core/Assistant/DbSchema.cs` (enum values,
   money-as-TEXT, FKs). Hand-written notes there are only for what names don't say; keep them minimal — a test fails if
   a note points at a column that no longer exists.
 - After any write the `sql` tool reloads the `RecipeBook` and `MainViewModel.DataChangedOutside` refreshes the open
   screens (the open recipe is reopened unless it has unsaved edits). Each message is prefixed with what's open.
-- Recipe import is a chat workflow, no review screen: map lines → `find_similar` (whole recipe and components) → the
+- Recipe import is a chat workflow, no review screen, only when asked: map lines → `find_similar` (whole recipe and components) → the
   model decides duplicate (don't import) / variant / new, creates missing ingredients unpriced, tags "Imported".
 - Similarity: every recipe flattened to leaf ingredients (sub-recipes expanded, scaled by amount used) as weight
   fractions; score = Σ min(shareA, shareB), + 0.1 × name-trigram similarity; `coverage` = share of the draft that maps

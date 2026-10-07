@@ -77,6 +77,7 @@ public partial class ToolsViewModel : ViewModelBase, ISection
         BusinessPostal = Book.GetSetting(SettingKeys.BusinessPostal);
         BusinessPhone = Book.GetSetting(SettingKeys.BusinessPhone);
         BusinessEmail = Book.GetSetting(SettingKeys.BusinessEmail);
+        AssistantInstructions = Assistant.Instructions(Book);
         _loading = false;
         LoadUnits();
         LoadLookup();
@@ -145,6 +146,22 @@ public partial class ToolsViewModel : ViewModelBase, ISection
         Book.SetSetting(key, string.IsNullOrWhiteSpace(value) ? null : value.Trim());
         _seenVersion = Book.Version;
     }
+
+    // ------------------------------------------------------------------ assistant instructions
+
+    /// <summary>The assistant's system prompt, minus the generated schema. Stored only when it differs from the default.</summary>
+    [ObservableProperty] [NotifyPropertyChangedFor(nameof(IsCustomInstructions))] private string _assistantInstructions = "";
+    public bool IsCustomInstructions => AssistantInstructions != Assistant.DefaultInstructions;
+
+    partial void OnAssistantInstructionsChanged(string value)
+    {
+        if (_loading) return;
+        SaveSetting(SettingKeys.AssistantPrompt, value == Assistant.DefaultInstructions ? null : value);
+        _ = _main.Assistant.InstructionsChanged();
+    }
+
+    [RelayCommand]
+    private void ResetInstructions() => AssistantInstructions = Assistant.DefaultInstructions;
 
     // ------------------------------------------------------------------ printing, tools, about
 

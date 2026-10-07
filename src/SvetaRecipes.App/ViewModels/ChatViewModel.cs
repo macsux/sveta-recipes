@@ -59,6 +59,7 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
     private ClaudeSDKClient? _client;
     private AssistantChatItem? _streaming;
     private bool _streamedText;
+    private bool _reconnect;
 
     public ChatViewModel(MainViewModel main)
     {
@@ -111,6 +112,7 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
         {
             _streaming = null;
             IsBusy = false;
+            if (_reconnect) await InstructionsChanged();
         }
     }
 
@@ -150,6 +152,13 @@ public sealed partial class ChatViewModel : ViewModelBase, IAsyncDisposable
         _sessionId = null;
         Items.Clear();
         OnPropertyChanged(nameof(IsEmpty));
+    }
+
+    /// <summary>Her instructions changed: the next message starts Claude Code again with them (same conversation).</summary>
+    public async Task InstructionsChanged()
+    {
+        _reconnect = IsBusy;
+        if (!IsBusy) await Reset();
     }
 
     private async Task Reset()

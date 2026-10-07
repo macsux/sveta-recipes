@@ -43,7 +43,7 @@
             <StackPanel IsVisible="{Binding IsEmpty}" VerticalAlignment="Center" Margin="28,0" Spacing="8">
                 <TextBlock Classes="h2" Text="Ask me anything about your recipes" HorizontalAlignment="Center" />
                 <TextBlock Classes="secondary" TextWrapping="Wrap" TextAlignment="Center"
-                           Text="What does a recipe cost? Which recipes use pistachio paste? Who hasn't paid? Paste a recipe from a book or website and I'll check whether you already have it, then add it." />
+                           Text="What does a recipe cost? Which recipes use pistachio paste? Who hasn't paid? Paste a recipe or a link and I'll check whether you already have it, and add it if you ask." />
             </StackPanel>
             <ScrollViewer x:Name="Scroller" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="16,12,16,12" Spacing="10">

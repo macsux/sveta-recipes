@@ -672,6 +672,7 @@ public static class SettingKeys
     public const string PrintFontSize = "PrintFontSize";
     public const string AssistantOpen = "AssistantOpen";
     public const string AssistantShowTools = "AssistantShowTools";
+    public const string AssistantPrompt = "AssistantPrompt";
     // Your business, printed on invoices (legacy tblSystemSettings)
     public const string BusinessName = "BusinessName";
     public const string BusinessAddress1 = "BusinessAddress1";

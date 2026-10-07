@@ -1,5 +1,12 @@
 # What's new
 
+## 1.3.0 — 2026-10-07
+
+- The assistant no longer adds a recipe unless you ask it to. Paste a recipe or a link and it tells you whether you
+  already have it or something close, then asks if you want it added.
+- New **Assistant** page in Tools & settings: read and change the instructions the assistant follows. "Reset to
+  default" brings back the original.
+
 ## 1.2.0 — 2026-10-07
 
 - The assistant can now search the web and open web pages. Give it a link to a recipe and it reads the page, checks

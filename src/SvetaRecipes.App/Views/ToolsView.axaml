@@ -217,6 +217,23 @@
             </DockPanel>
         </TabItem>
 
+        <!-- ===================================================== Assistant -->
+        <TabItem Header="Assistant">
+            <DockPanel Margin="28,20" MaxWidth="980" HorizontalAlignment="Left">
+                <StackPanel DockPanel.Dock="Top" Spacing="6" Margin="0,0,0,10">
+                    <TextBlock Text="ASSISTANT INSTRUCTIONS" Classes="caption" />
+                    <TextBlock Classes="small muted" TextWrapping="Wrap"
+                               Text="What the assistant is told before every conversation. A description of your data's tables is added after it automatically. Changes apply from the next message." />
+                </StackPanel>
+                <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Spacing="8" Margin="0,10,0,0">
+                    <Button Content="Reset to default" Command="{Binding ResetInstructionsCommand}" IsEnabled="{Binding IsCustomInstructions}" />
+                    <TextBlock Text="Your own version is in use." Classes="small muted" VerticalAlignment="Center" IsVisible="{Binding IsCustomInstructions}" />
+                </StackPanel>
+                <TextBox Text="{Binding AssistantInstructions}" AcceptsReturn="True" TextWrapping="Wrap"
+                         VerticalContentAlignment="Top" />
+            </DockPanel>
+        </TabItem>
+
         <!-- ===================================================== About -->
         <TabItem Header="About">
             <ScrollViewer>
