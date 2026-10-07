@@ -10,7 +10,7 @@
 #             This one contains customer data — hand it over privately; never upload or commit it.
 #
 # Needs: .NET 10 SDK, vpk (dotnet tool install -g vpk), gh (logged in) for --upload, mdbtools for --seed,
-#        Bolt.Theme at ../aibolt/src/Bolt.Theme.
+#        Bolt.Theme at ../aibolt/src/Bolt.Theme, the Claude Agent SDK at ../claude-agent-sdk-dotnet.
 set -euo pipefail
 cd "$(dirname "$0")"
 

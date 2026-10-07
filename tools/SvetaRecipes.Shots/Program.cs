@@ -26,6 +26,7 @@ var (source, outDir) = (args[0], args[1]);
 Directory.CreateDirectory(outDir);
 var db = Path.Combine(outDir, "smoke.db");
 File.Copy(source, db, overwrite: true);
+if (Directory.Exists(Path.Combine(outDir, "assistant"))) Directory.Delete(Path.Combine(outDir, "assistant"), recursive: true);   // saved chats
 var failures = new List<string>();
 void Check(bool ok, string what) { Console.WriteLine($"{(ok ? "  ok  " : "  FAIL")} {what}"); if (!ok) failures.Add(what); }
 
@@ -164,6 +165,75 @@ Pdf.Labels(Path.Combine(outDir, "labels.pdf"),
 Pdf.ShoppingList(Path.Combine(outDir, "shopping.pdf"), list, groupByStore: true);
 Pdf.Labels(Path.Combine(outDir, "labels-copies.pdf"), [(cremeux, 3)], new LabelLayout());
 Check(new[] { "recipe.pdf", "labels.pdf", "shopping.pdf", "invoice.pdf", "labels-copies.pdf" }.All(f => new FileInfo(Path.Combine(outDir, f)).Length > 1000), "recipe, label (with copies), shopping and invoice PDFs generated");
+
+// ---------------------------------------------------------------- assistant
+vm.SelectedTab = 0;
+vm.Recipes.SelectRecipe(cremeux.Id).GetAwaiter().GetResult();
+vm.IsAssistantOpen = true;
+Shot(window, "11-assistant-empty");
+Check(vm.DescribeView().Contains($"recipe {cremeux.Id}"), $"the assistant is told what's open ({vm.DescribeView()})");
+
+if (args.Contains("--live"))
+{
+    // Real conversations through the Claude Code CLI (needs it installed and logged in; costs a little).
+    string Ask(string question)
+    {
+        vm.Assistant.Draft = question;
+        var send = vm.Assistant.SendCommand.ExecuteAsync(null);
+        var deadline = DateTime.Now.AddMinutes(4);
+        while (!send.IsCompleted && DateTime.Now < deadline) { Pump(); Thread.Sleep(50); }
+        Pump();
+        var reply = string.Join("\n", vm.Assistant.Items.Reverse().TakeWhile(i => i is not UserChatItem).Reverse()
+            .Select(i => i switch { AssistantChatItem a => a.Text, ToolChatItem t => $"[{t.Tool}{(t.Failed ? " FAILED" : "")}] {t.Input}\n      → {(t.Result ?? "(no result)").Split('\n').FirstOrDefault()}", ErrorChatItem e => "ERROR " + e.Text, _ => "" }));
+        Console.WriteLine($"  > {question}\n{string.Join("\n", reply.Split('\n').Select(l => "    " + l))}");
+        return reply;
+    }
+
+    var costReply = Ask("What does this recipe cost per serving?");
+    Check(costReply.Contains("25.72"), "live: the open recipe's cost per serving comes from get_costing ($25.72)");
+    Shot(window, "12-assistant-cost");
+
+    var recipesBefore = book.Recipes.Count;
+    var importReply = Ask("""
+        Please add this recipe:
+        Caramel chocolate cremeux
+        100 g whipping cream 35%
+        20 g egg yolks
+        10 g white sugar
+        1 g fish gelatin
+        70 g milk chocolate
+        """);
+    Check(book.Recipes.Count == recipesBefore && importReply.Contains("Caramel choc cremeux M", StringComparison.OrdinalIgnoreCase),
+        "live: a pasted copy of an existing recipe is recognised as a duplicate and not imported");
+    Check(importReply.Contains("[find_similar]"), "live: the duplicate check used find_similar");
+    foreach (var t in vm.Assistant.Items.OfType<ToolChatItem>().Where(t => t.Tool == "find_similar")) t.IsExpanded = true;
+    Shot(window, "13-assistant-duplicate");
+
+    var variantReply = Ask("""
+        And this one, from a magazine:
+        Passion fruit shortbread
+        200 g butter
+        100 g icing sugar
+        300 g all-purpose flour
+        60 g passion fruit purée
+        1 pinch salt
+        """);
+    Check(book.Recipes.Count == recipesBefore + 1 && book.Tags.Any(t => t.Name == "Imported"), "live: a new recipe is imported, tagged Imported");
+    Shot(window, "14-assistant-import");
+
+    // Saved and reopened: a fresh panel shows the same conversation and continues the same Claude session.
+    var saved = vm.Assistant.Items.Count;
+    vm.Assistant.ShowToolCalls = false;
+    Shot(window, "15-assistant-tools-hidden");
+    Check(vm.Assistant.Items.OfType<ToolChatItem>().All(t => !t.IsShown), "live: the Tool calls toggle hides tool calls");
+    vm.Assistant.ShowToolCalls = true;
+    var reopened2 = new ChatViewModel(vm);
+    Check(reopened2.Items.Count == saved, $"live: the conversation is saved and reopens ({reopened2.Items.Count} of {saved} items)");
+    var closing = vm.Assistant.DisposeAsync().AsTask();   // as on window close; the client needs the dispatcher to shut down
+    while (!closing.IsCompleted) { Pump(); Thread.Sleep(50); }
+    var remember = Ask("What was the name of the recipe you just added? Answer with the name only.");
+    Check(remember.Contains("shortbread", StringComparison.OrdinalIgnoreCase), "live: a follow-up remembers the conversation");
+}
 
 Console.WriteLine(failures.Count == 0 ? "ALL PASSED" : $"{failures.Count} FAILED");
 return failures.Count == 0 ? 0 : 1;

@@ -13,7 +13,7 @@ is in `legacy/ANALYSIS.md`; `docs/old-vs-new/` shows each legacy screen beside i
 ```
 src/SvetaRecipes.Core      domain model, EF Core (SQLite), costing/scaling/conversion maths, RecipeBook store, backups
 src/SvetaRecipes.Reports   QuestPDF documents: recipe (scaled, sub-recipes expanded), label sheet, shopping list
-src/SvetaRecipes.App       Avalonia UI (MVVM, CommunityToolkit.Mvvm), one tab per area
+src/SvetaRecipes.App       Avalonia UI (MVVM, CommunityToolkit.Mvvm), one tab per area + the assistant panel
 tools/SvetaRecipes.Import  legacy .mdb → new database (needs mdbtools; Mac only)
 tools/SvetaRecipes.Shots   headless smoke test + screenshots of every screen (no display needed)
 tests/SvetaRecipes.Core.Tests   engine tests + parity against the legacy data
@@ -26,7 +26,8 @@ legacy/                    the Access files as received, extracted CSV/VBA/scree
 The UI uses andrew's **Bolt.Theme** (`../aibolt/src/Bolt.Theme`, referenced by path via `BoltThemeDir` in
 `Directory.Build.props`), built so an AI never has to invent styling. Views use only its vocabulary — `Border.card`,
 `TextBlock.caption/title/h2/secondary/muted/small/mono`, `Button.accent/ghost/link/icon`, `ToggleButton.pill`,
-`Border.hairline/vrule/badge`, `b:Icon` with `Bolt.Icon.*` — plus layout (margins, grids, spacing).
+`Border.hairline/vrule/badge/bubble`, `TextBox.composer`, `b:Icon` with `Bolt.Icon.*`, `b:MarkdownBlock`, `b:Spinner` —
+plus layout (margins, grids, spacing).
 **No `<Style>` or `UserControl.Styles` with visual setters in this repo.** The one `TreeView.Styles` entry binds
 `IsExpanded` (data plumbing, not looks). If a control looks wrong, the fix belongs in Bolt.Theme: e.g. the
 `AutoCompleteBox` rule added to `Bolt.Theme/Styles.axaml` on 2026-10-05 (Fluent template-binds its inner TextBox to a
@@ -82,6 +83,30 @@ Access screen to the cent, line by line. Keep it green.
   `Documents\Sveta Recipes Backups` (follows OneDrive-redirected Documents). Restore from Tools & settings.
 - Legacy ids are preserved on import, so a row can be traced to the Access file.
 
+## Assistant panel
+
+A collapsible chat column on the right (toggle top-right; open state in setting `AssistantOpen`). Same integration as
+aibolt: the .NET Claude Agent SDK (`../claude-agent-sdk-dotnet`, `ClaudeAgentSdkDir` in `Directory.Build.props`) runs
+the **Claude Code CLI as a subprocess**, so her PC needs Claude Code installed and logged in. `Services/Assistant.cs`:
+- Claude Code's own tools are off (`Tools = []`), no settings/CLAUDE.md/skills from the PC (`SettingSources = []`).
+  It gets an in-process MCP server `recipes`: `sql` (any SQL, reads **and writes**, `Core/Assistant/SqlRunner.cs`),
+  `backup` (snapshot; the prompt says to call it before the first write), `get_costing` (live `CostCalculator`),
+  `find_similar` (`Core/Assistant/Similarity.cs`). Unit conversions are left to the model.
+- The system prompt carries the schema, generated from the EF model by `Core/Assistant/DbSchema.cs` (enum values,
+  money-as-TEXT, FKs). Hand-written notes there are only for what names don't say; keep them minimal — a test fails if
+  a note points at a column that no longer exists.
+- After any write the `sql` tool reloads the `RecipeBook` and `MainViewModel.DataChangedOutside` refreshes the open
+  screens (the open recipe is reopened unless it has unsaved edits). Each message is prefixed with what's open.
+- Recipe import is a chat workflow, no review screen: map lines → `find_similar` (whole recipe and components) → the
+  model decides duplicate (don't import) / variant / new, creates missing ingredients unpriced, tags "Imported".
+- Similarity: every recipe flattened to leaf ingredients (sub-recipes expanded, scaled by amount used) as weight
+  fractions; score = Σ min(shareA, shareB), + 0.1 × name-trigram similarity; `coverage` = share of the draft that maps
+  to her ingredients. Snapshots (assistant, Backup now) are pruned separately from the 30 dailies.
+- Every chat is saved as JSON lines in `assistant/chat-*.jsonl` next to the DB (`Services/Transcript.cs`: user text +
+  what was open, replies, full tool inputs/results, the Claude session id). On start the latest is shown and its
+  session resumed (a fresh one if resume fails); "+" starts a new chat. Tool calls show as expandable rows with the
+  complete input and result; the "Tool calls" toggle under the composer hides them (setting `AssistantShowTools`).
+
 ## UI gotchas (both cost real debugging)
 
 - **Swapping a ContentControl's view-model leaks into the outgoing view.** Avalonia sets the presenter's DataContext to
@@ -99,6 +124,7 @@ dotnet test --project tests/SvetaRecipes.Core.Tests          # engine + legacy p
 dotnet run --project tools/SvetaRecipes.Import -- legacy/original/SRD_data.mdb legacy/original/SRD_2018_u.mdb .data/recipes.db --force
 SVETA_RECIPES_DB=$PWD/.data/dev.db dotnet run --project src/SvetaRecipes.App
 dotnet run --project tools/SvetaRecipes.Shots -- .data/recipes.db .data/shots [Light|Dark]   # smoke test + PNGs
+dotnet run --project tools/SvetaRecipes.Shots -- .data/recipes.db .data/shots-live Light --live   # + real assistant chats (CLI, costs a little)
 ./release.sh 1.0.1 --upload                  # public update on GitHub (no data)
 ./release.sh 1.0.0 --upload --seed <SRD_data.mdb> <SRD_2018_u.mdb>   # + private installer with her data
 ```
@@ -128,4 +154,6 @@ asleep/locked (or from a sandboxed shell) — use the Shots tool, which renders 
 
 ## Not done yet
 
+- Assistant on her PC: Claude Code isn't installed or logged in there yet, and which account it uses (her subscription
+  or an API key) is undecided. Without it the panel says Claude Code is missing.
 - Label layout is a guess (2 × 5, Letter, Avery 5163-ish); the Access report layout could not be extracted.

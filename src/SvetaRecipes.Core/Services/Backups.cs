@@ -52,9 +52,14 @@ public static class Backups
             ? new DirectoryInfo(folder).GetFiles("recipes-*.db").OrderByDescending(f => f.LastWriteTimeUtc)
             : [];
 
+    /// <summary>
+    /// Daily backups and on-demand snapshots (Backup now, before a restore, before the assistant writes) are pruned
+    /// separately, so a busy day of snapshots never pushes out the month of dailies.
+    /// </summary>
     private static void Prune(string folder, int keep)
     {
-        foreach (var old in List(folder).Skip(keep))
+        var dailyLength = "recipes-yyyy-MM-dd.db".Length;
+        foreach (var old in List(folder).GroupBy(f => f.Name.Length == dailyLength).SelectMany(g => g.Skip(keep)))
         {
             try { old.Delete(); }
             catch (IOException) { /* in use or locked; next run will retry */ }

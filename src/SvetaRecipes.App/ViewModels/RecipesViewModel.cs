@@ -328,6 +328,17 @@ public partial class RecipesViewModel : ViewModelBase, ISection
     }
 
     /// <summary>After a backup is restored: drop the open recipe (it may not exist any more) and rebuild.</summary>
+    /// <summary>
+    /// The data changed underneath (the assistant wrote to the database): the open recipe is reopened from the new data,
+    /// unless she has unsaved edits in it.
+    /// </summary>
+    public void Reloaded()
+    {
+        if (Editor is { IsDirty: false, Id: > 0 } e)
+            SetEditor(Book.FindRecipe(e.Id) is { } fresh ? new RecipeEditorViewModel(this, fresh) : null);
+        Activate();
+    }
+
     public void Reset()
     {
         _checked.Clear();

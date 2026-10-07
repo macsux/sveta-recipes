@@ -7,5 +7,7 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- Bolt.Theme lives in the aibolt repo; override with -p:BoltThemeDir=... if it moves. -->
     <BoltThemeDir Condition="'$(BoltThemeDir)' == ''">$(MSBuildThisFileDirectory)..\aibolt\src\Bolt.Theme</BoltThemeDir>
+    <!-- The .NET Claude Agent SDK (the assistant panel), from its sibling checkout, as aibolt uses it. -->
+    <ClaudeAgentSdkDir Condition="'$(ClaudeAgentSdkDir)' == ''">$(MSBuildThisFileDirectory)..\claude-agent-sdk-dotnet\src\Claude.AgentSdk</ClaudeAgentSdkDir>
   </PropertyGroup>
 </Project>

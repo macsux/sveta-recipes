@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SvetaRecipes.Core.Assistant;
 using SvetaRecipes.Core.Costing;
 using SvetaRecipes.Core.Data;
 using SvetaRecipes.Core.Model;
@@ -108,6 +109,9 @@ public sealed class RecipeBook
     /// <summary>A calculator over the saved data, optionally seeing <paramref name="overlay"/> in place of its saved copy.</summary>
     public CostCalculator Calculator(Recipe? overlay = null) =>
         new(id => overlay is not null && overlay.Id == id ? overlay : FindRecipe(id), FindIngredient, UnitConverter, LabourRate);
+
+    /// <summary>Composition similarity over the saved data (memoised; create a new one after data changes).</summary>
+    public Similarity Similarity() => new(Recipes, Calculator(), UnitConverter, FindIngredient);
 
     /// <summary>Recipes that use <paramref name="recipeId"/> as a sub-recipe.</summary>
     public IEnumerable<Recipe> ParentsOf(int recipeId) =>
@@ -666,6 +670,8 @@ public static class SettingKeys
     public const string LabelColumns = "LabelColumns";
     public const string LabelRows = "LabelRows";
     public const string PrintFontSize = "PrintFontSize";
+    public const string AssistantOpen = "AssistantOpen";
+    public const string AssistantShowTools = "AssistantShowTools";
     // Your business, printed on invoices (legacy tblSystemSettings)
     public const string BusinessName = "BusinessName";
     public const string BusinessAddress1 = "BusinessAddress1";

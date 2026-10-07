@@ -35,5 +35,6 @@
     <ProjectReference Include="..\SvetaRecipes.Core\SvetaRecipes.Core.csproj" />
     <ProjectReference Include="..\SvetaRecipes.Reports\SvetaRecipes.Reports.csproj" />
     <ProjectReference Include="$(BoltThemeDir)\Bolt.Theme.csproj" />
+    <ProjectReference Include="$(ClaudeAgentSdkDir)\Claude.AgentSdk.csproj" />
   </ItemGroup>
 </Project>

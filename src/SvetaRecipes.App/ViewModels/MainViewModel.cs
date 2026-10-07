@@ -22,8 +22,10 @@ public partial class MainViewModel : ViewModelBase
     public InvoicesViewModel Invoices { get; }
     public CompaniesViewModel Companies { get; }
     public ToolsViewModel Tools { get; }
+    public ChatViewModel Assistant { get; }
 
     [ObservableProperty] private int _selectedTab;
+    [ObservableProperty] private bool _isAssistantOpen;
 
     public MainViewModel(RecipeBook book, Window window)
     {
@@ -35,7 +37,26 @@ public partial class MainViewModel : ViewModelBase
         Invoices = new InvoicesViewModel(this);
         Companies = new CompaniesViewModel(this);
         Tools = new ToolsViewModel(this);
+        Assistant = new ChatViewModel(this);
+        _isAssistantOpen = book.GetSetting(SettingKeys.AssistantOpen) == "1";
         Recipes.Activate();
+    }
+
+    partial void OnIsAssistantOpenChanged(bool value) => Book.SetSetting(SettingKeys.AssistantOpen, value ? "1" : "0");
+
+    /// <summary>The assistant wrote to the database (the book is already reloaded): bring the open screens up to date.</summary>
+    public void DataChangedOutside()
+    {
+        Recipes.Reloaded();
+        Section(SelectedTab).Activate();
+    }
+
+    /// <summary>What she is looking at, for the assistant.</summary>
+    public string DescribeView()
+    {
+        string[] tabs = ["Recipes", "Ingredients", "Shopping lists", "Invoices", "Customers & suppliers", "Tools & settings"];
+        var tab = tabs[Math.Clamp(SelectedTab, 0, tabs.Length - 1)] + " tab";
+        return SelectedTab == 0 && Recipes.Editor is { Id: > 0 } e ? $"{tab}, recipe {e.Id} \"{e.Name}\"{(e.IsDirty ? " (unsaved edits)" : "")}" : tab;
     }
 
     private ISection Section(int index) => index switch
